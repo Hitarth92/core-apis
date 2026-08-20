@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { OrderEntity } from '../../../../infrastructure/persistence/entities/order.entity';
 import { Order } from '../domain';
-import { CreateOrderRequest, UpdateOrderRequest, OrderResponse } from '../models';
+import { CreateOrderRequest, OrderResponse } from '../models';
 import { CreateOrderCommand } from '../commands';
 
 @Injectable()

@@ -9,12 +9,15 @@ import {
   CREDIT_APPROVAL_REQUEST_REPO,
   CUSTOMER_CREDIT_TRANSACTION_REPO,
   CUSTOMER_REPO,
+  CUSTOMER_TYPE_RULE_REPO,
   INVENTORY_REPO,
   STOCK_MOVEMENT_REPO,
 } from '../../constants';
 import { IBillItemRepo, IBillRepo } from '../../modules/bills';
 import { Bill, BillItem } from '../../modules/bills/domain';
 import { ICustomerRepo } from '../../modules/customers';
+import { Customer } from '../../modules/customers/domain';
+import { ICustomerTypeRuleRepo } from '../../modules/billing-settings';
 import {
   ICommissionPayableRepo,
   ICreditApprovalRequestRepo,
@@ -31,7 +34,6 @@ import {
   EMovementType,
   ESaleType,
 } from '../../../infrastructure/persistence/entities';
-import { Filter } from '../../../common';
 
 export class CreditLimitExceededError extends BadRequestException {
   public readonly approvalRequestId: string;
@@ -53,6 +55,7 @@ export class BillCompletionService {
     @Inject(INVENTORY_REPO) private readonly inventoryRepo: IInventoryRepo,
     @Inject(STOCK_MOVEMENT_REPO) private readonly movementRepo: IStockMovementRepo,
     @Inject(CUSTOMER_REPO) private readonly customerRepo: ICustomerRepo,
+    @Inject(CUSTOMER_TYPE_RULE_REPO) private readonly typeRuleRepo: ICustomerTypeRuleRepo,
     @Inject(CUSTOMER_CREDIT_TRANSACTION_REPO) private readonly creditTxnRepo: ICustomerCreditTransactionRepo,
     @Inject(CREDIT_APPROVAL_REQUEST_REPO) private readonly creditApprovalRepo: ICreditApprovalRequestRepo,
     @Inject(COMMISSION_PAYABLE_REPO) private readonly commissionRepo: ICommissionPayableRepo,
@@ -98,6 +101,10 @@ export class BillCompletionService {
 
     const wouldBeBalance = Number(customer.creditBalance) + Number(bill.totalAmount);
     if (wouldBeBalance > Number(customer.creditLimit)) {
+      if (await this.shouldSkipCreditApproval(bill, customer)) {
+        this.logger.info({ billId: bill.id, customerId: customer.id }, 'credit-limit.skip-approval');
+        return;
+      }
       const approval = await this.creditApprovalRepo.createAsync({
         organizationId: bill.organizationId,
         customerId: bill.customerId,
@@ -109,6 +116,17 @@ export class BillCompletionService {
       this.logger.warn({ billId: bill.id, approvalId: approval.id }, 'credit-limit.exceeded');
       throw new CreditLimitExceededError(approval.id);
     }
+  }
+
+  private async shouldSkipCreditApproval(bill: Bill, customer: Customer): Promise<boolean> {
+    if (customer.skipOverLimitApproval != null) return customer.skipOverLimitApproval;
+    const type = bill.customerType ?? customer.customerType;
+    if (!type) return false;
+    const rule = await this.typeRuleRepo.findOneAsync({
+      organizationId: bill.organizationId,
+      customerType: type,
+    });
+    return rule?.skipOverLimitApproval === true;
   }
 
   private async applyCredit(bill: Bill, performedById: string): Promise<void> {

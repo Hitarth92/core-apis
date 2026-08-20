@@ -1,9 +1,10 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards, ParseEnumPipe } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards, ParseEnumPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, Roles, RolesGuard } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, Roles, RolesGuard, AuthenticatedUser, CurrentUser, assertOrgOwnership } from '../../../common';
+import { resolveInviteOrganizationId } from './commands/invite-user';
 import { ERole } from '../../../infrastructure';
 import {
   AssignUserToOrgCommand,
@@ -61,11 +62,25 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
   @Get()
-  public async list(@Query() params: ListUsersRequest): Promise<ClerkUserListResponse> {
+  public async list(
+    @Query() params: ListUsersRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ClerkUserListResponse> {
     const query              = new ListUsersQuery();
     query.limit              = params.limit;
     query.offset             = params.offset;
-    query.organizationId     = params.organizationId;
+    const isSuperAdmin       = user.roles?.includes(ERole.SuperAdmin);
+    const clerkOrgId         = user.clerkOrgId;
+    // Clerk listUsers expects org_xxx, not our DB organization UUID.
+    if (isSuperAdmin) {
+      query.organizationId = params.organizationId?.startsWith('org_')
+        ? params.organizationId
+        : clerkOrgId;
+    } else if (clerkOrgId) {
+      query.organizationId = clerkOrgId;
+    } else {
+      throw new ForbiddenException('No active Clerk organization on this session');
+    }
     return this.mediator.execute<ListUsersQuery, ClerkUserListResponse>(query);
   }
 
@@ -88,10 +103,11 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<UserResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user?: AuthenticatedUser): Promise<UserResponse> {
     const query = new GetUserQuery();
     query.id    = id;
     const result = await this.mediator.execute<GetUserQuery, User>(query);
+    assertOrgOwnership(user, result.organizationId, 'user');
     return this.mapper.map(result, User, UserResponse);
   }
 
@@ -124,6 +140,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Create a new user' })
   @ApiCreatedResponse({ type: UserResponse })
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
   @Post()
   public async create(@Body() body: CreateUserRequest): Promise<UserResponse> {
     const command = this.mapper.map(body, CreateUserRequest, CreateUserCommand);
@@ -137,8 +155,13 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
   @Post('clerk/invite')
-  public async invite(@Body() body: InviteUserRequest): Promise<void> {
+  public async invite(@CurrentUser() currentUser: AuthenticatedUser, @Body() body: InviteUserRequest): Promise<void> {
     const command = this.mapper.map(body, InviteUserRequest, InviteUserCommand);
+    command.organizationId = resolveInviteOrganizationId({
+      callerIsSuperAdmin: currentUser.roles?.includes(ERole.SuperAdmin) ?? false,
+      callerOrganizationId: currentUser.organizationId,
+      requestedOrganizationId: body.organizationId,
+    });
     await this.mediator.execute<InviteUserCommand, void>(command);
   }
 

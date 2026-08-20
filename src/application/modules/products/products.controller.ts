@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard, AuthenticatedUser } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard, AuthenticatedUser, assertOrgOwnership } from '../../../common';
 import { ERole } from '../../../infrastructure';
 import { AddProductImageCommand, CreateProductCommand, DeleteProductCommand, LinkProductSupplierCommand, UnlinkProductSupplierCommand, UpdateProductCommand, UpdateProductSupplierCommand } from './commands';
 import { Product, ProductSupplier } from './domain';
@@ -73,10 +73,11 @@ export class ProductsController {
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<ProductResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ProductResponse> {
     const query = new GetProductQuery();
     query.id = id;
     const result = await this.mediator.execute<GetProductQuery, Product>(query);
+    assertOrgOwnership(user, result.organizationId, 'Product');
     return this.mapper.map(result, Product, ProductResponse);
   }
 
@@ -100,7 +101,11 @@ export class ProductsController {
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdateProductRequest): Promise<ProductResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdateProductRequest, @CurrentUser() user: AuthenticatedUser): Promise<ProductResponse> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command = this.mapper.map(body, UpdateProductRequest, UpdateProductCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdateProductCommand, Product>(command);
@@ -112,7 +117,11 @@ export class ProductsController {
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
-  public async delete(@Param('id') id: string): Promise<boolean> {
+  public async delete(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<boolean> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command = new DeleteProductCommand();
     command.id    = id;
     return this.mediator.execute<DeleteProductCommand, boolean>(command);
@@ -131,6 +140,10 @@ export class ProductsController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ProductImageResponse> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command = new AddProductImageCommand();
     command.productId    = id;
     command.buffer       = file.buffer;
@@ -144,7 +157,11 @@ export class ProductsController {
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id/images')
-  public async listImages(@Param('id') id: string): Promise<ProductImageResponse[]> {
+  public async listImages(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ProductImageResponse[]> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const query = new ListProductImagesQuery();
     query.productId = id;
     return this.mediator.execute<ListProductImagesQuery, ProductImageResponse[]>(query);
@@ -158,7 +175,12 @@ export class ProductsController {
   public async getImagePresignedUrl(
     @Param('id') id: string,
     @Query() queryParams: GetProductImageUploadUrlRequest,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<ProductImageUploadUrlResponse> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const query = new GetProductImageUploadUrlQuery();
     query.productId = id;
     query.mimeType  = queryParams.mimeType;
@@ -170,7 +192,11 @@ export class ProductsController {
   @ApiParam({ name: 'id', description: 'Product UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id/suppliers')
-  public async listSuppliers(@Param('id') id: string): Promise<ProductSupplierResponse[]> {
+  public async listSuppliers(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ProductSupplierResponse[]> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const query     = new ListProductSuppliersQuery();
     query.productId = id;
     const result    = await this.mediator.execute<ListProductSuppliersQuery, ProductSupplier[]>(query);
@@ -185,7 +211,12 @@ export class ProductsController {
   public async linkSupplier(
     @Param('id') id: string,
     @Body() body: LinkProductSupplierRequest,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<ProductSupplierResponse> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command     = this.mapper.map(body, LinkProductSupplierRequest, LinkProductSupplierCommand);
     command.productId = id;
     const result      = await this.mediator.execute<LinkProductSupplierCommand, ProductSupplier>(command);
@@ -202,7 +233,12 @@ export class ProductsController {
     @Param('id') id: string,
     @Param('supplierId') supplierId: string,
     @Body() body: UpdateProductSupplierRequest,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<ProductSupplierResponse> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command       = this.mapper.map(body, UpdateProductSupplierRequest, UpdateProductSupplierCommand);
     command.productId   = id;
     command.supplierId  = supplierId;
@@ -219,7 +255,12 @@ export class ProductsController {
   public async unlinkSupplier(
     @Param('id') id: string,
     @Param('supplierId') supplierId: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<boolean> {
+    const fetchQuery = new GetProductQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetProductQuery, Product>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Product');
     const command      = new UnlinkProductSupplierCommand();
     command.productId  = id;
     command.supplierId = supplierId;

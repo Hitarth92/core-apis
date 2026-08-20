@@ -3,7 +3,6 @@ import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryHandlerStrict, CLERK_SERVICE, IClerkService } from '../../../../../common';
 import { ClerkInvitationResponse } from '../../models';
-import { EInvitationStatus } from '../../../../../infrastructure/e-invitation-status';
 import { ListInvitationsQuery } from './list-invitations.query';
 
 @QueryHandlerStrict(ListInvitationsQuery)

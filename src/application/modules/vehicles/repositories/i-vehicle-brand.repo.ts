@@ -1,4 +1,4 @@
 import { IBaseRepo } from 'src/common';
 import { VehicleBrand } from '../domain';
 
-export interface IVehicleBrandRepo extends IBaseRepo<VehicleBrand, string> {}
+export type IVehicleBrandRepo = IBaseRepo<VehicleBrand, string>;

@@ -6,7 +6,7 @@ import { VEHICLE_REPO } from 'src/application/constants';
 import { IVehicleRepo } from '../../../vehicles/repositories/i-vehicle.repo';
 import { EVehicleStatus } from 'src/application/shared';
 import { GetFleetSummaryKpisQuery } from './get-fleet-summary.query';
-import { FleetSummaryResponse } from '../../models/responses/fleet-summary.response';
+import { FleetSummaryResponse } from '../../models';
 
 @QueryHandlerStrict(GetFleetSummaryKpisQuery)
 export class GetFleetSummaryKpisHandler implements IQueryHandler<GetFleetSummaryKpisQuery, FleetSummaryResponse> {
@@ -15,9 +15,9 @@ export class GetFleetSummaryKpisHandler implements IQueryHandler<GetFleetSummary
     @InjectPinoLogger(GetFleetSummaryKpisHandler.name) private readonly logger: PinoLogger,
   ) {}
 
-  public async execute(): Promise<FleetSummaryResponse> {
+  public async execute(query: GetFleetSummaryKpisQuery): Promise<FleetSummaryResponse> {
     this.logger.info(`Executing Query '${GetFleetSummaryKpisQuery.name}'`);
-    const allVehicles = await this.vehicleRepo.allAsync();
+    const allVehicles = await this.vehicleRepo.allAsync({ companyId: query.organizationId });
 
     return {
       totalVehicles:       allVehicles.length,

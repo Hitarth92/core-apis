@@ -10,4 +10,6 @@ export class CreateCustomerCommand extends CommandBase {
   @AutoMap() public gstin?: string;
   @AutoMap() public creditLimit?: number;
   @AutoMap(() => String) public customerType?: ECustomerType;
+  @AutoMap() public discountPercent?: number | null;
+  @AutoMap() public skipOverLimitApproval?: boolean | null;
 }

@@ -10,5 +10,4 @@ export interface SupplierFilter {
 
 export const SUPPLIER_REPO = 'SUPPLIER_REPO';
 
-export interface ISupplierRepo extends IBaseRepo<Supplier, string, PageableFilter<SupplierFilter>, Filter<SupplierFilter>> {
-}
+export type ISupplierRepo = IBaseRepo<Supplier, string, PageableFilter<SupplierFilter>, Filter<SupplierFilter>>;

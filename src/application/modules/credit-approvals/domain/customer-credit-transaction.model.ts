@@ -10,5 +10,7 @@ export class CustomerCreditTransaction {
   @AutoMap() public balanceBefore: number;
   @AutoMap() public balanceAfter: number;
   @AutoMap() public performedById?: string;
+  @AutoMap() public paymentMethod?: string;
+  @AutoMap() public note?: string;
   @AutoMap(() => Date) public createdAt: Date;
 }

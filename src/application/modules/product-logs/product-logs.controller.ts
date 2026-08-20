@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, IPageable, Roles, RolesGuard } from 'src/common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard, assertOrgOwnership } from 'src/common';
 import { ERole } from 'src/infrastructure/persistence/entities/role.entity';
 import { EProductLogAction } from 'src/infrastructure/persistence/entities';
 import { ProductLog } from './domain';
@@ -27,10 +27,11 @@ export class ProductLogsController {
   @ApiParam({ name: 'id', description: 'ProductLog UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<ProductLogResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ProductLogResponse> {
     const query  = new GetProductLogQuery();
     query.id     = id;
     const result = await this.mediator.execute<GetProductLogQuery, ProductLog>(query);
+    assertOrgOwnership(user, result.organizationId, 'ProductLog');
     return this.mapper.map(result, ProductLog, ProductLogResponse);
   }
 

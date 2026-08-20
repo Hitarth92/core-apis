@@ -8,4 +8,6 @@ export class SyncUserCommand extends CommandBase {
   @AutoMap() public lastName: string;
   @AutoMap() public imageUrl?: string;
   @AutoMap() public organizationId?: string;
+  @AutoMap() public roleId?: string;
+  @AutoMap() public locationId?: string;
 }

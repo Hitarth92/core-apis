@@ -200,7 +200,7 @@ export interface HmsPushNotification {
   message?: object;
 }
 
-export interface InfoRequest {}
+export type InfoRequest = Record<string, never>;
 
 export interface InvalidateUserTokensRequest {
   expire_at?: number;
@@ -217,7 +217,7 @@ export interface PresenceStatsRequest {
   channel?: string;
 }
 
-export interface PublishRequest<T = Object> {
+export interface PublishRequest<T = object> {
   channel?: string;
   data?: T;
   b64data?: string;
@@ -377,7 +377,7 @@ export interface ApiDisconnect {
   reason?: string;
 }
 
-export interface CentrifugalRequest<T = Object> {
+export interface CentrifugalRequest<T = object> {
   method: CentrifugalMethod;
   params: T;
   id?: string;

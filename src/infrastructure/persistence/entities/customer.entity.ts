@@ -45,6 +45,14 @@ export class CustomerEntity {
   @Column({ name: 'customer_type', type: 'enum', enum: ECustomerType, nullable: true })
   public customerType?: ECustomerType;
 
+  @AutoMap()
+  @Column({ name: 'discount_percent', type: 'decimal', precision: 5, scale: 2, nullable: true, transformer: numericTransformer })
+  public discountPercent?: number | null;
+
+  @AutoMap()
+  @Column({ name: 'skip_over_limit_approval', type: 'boolean', nullable: true })
+  public skipOverLimitApproval?: boolean | null;
+
   @AutoMap(() => Date)
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   public createdAt: Date;

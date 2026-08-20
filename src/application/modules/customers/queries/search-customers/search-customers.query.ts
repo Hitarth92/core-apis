@@ -6,6 +6,7 @@ export class SearchCustomersQuery extends QueryBase implements PageableFilter<Cu
   @AutoMap() public organizationId?: string;
   @AutoMap() public name?: string;
   @AutoMap() public phone?: string;
+  @AutoMap() public hasCreditLimit?: boolean;
   @AutoMap() public $page?: number;
   @AutoMap() public $perPage?: number;
   @AutoMap() public $orderBy?: string;

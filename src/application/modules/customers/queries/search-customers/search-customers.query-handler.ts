@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { QueryHandlerStrict, IPageable, PageableFilter } from '../../../../../common';
+import { QueryHandlerStrict, IPageable } from '../../../../../common';
 import { CUSTOMER_REPO } from '../../../../constants';
-import { Customer, CustomerFilter } from '../../domain';
+import { Customer } from '../../domain';
 import { ICustomerRepo } from '../../i-customer.repo';
 import { SearchCustomersQuery } from './search-customers.query';
 

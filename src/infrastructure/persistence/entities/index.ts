@@ -29,6 +29,7 @@ import { ReportGenerationLogEntity } from './report-generation-log.entity';
 import { StockEntryEntity } from './stock-entry.entity';
 import { StockTransferEntity } from './stock-transfer.entity';
 import { StockTransferItemEntity } from './stock-transfer-item.entity';
+import { StockTransferRequestEntity } from './stock-transfer-request.entity';
 import { ProductVariantEntity } from './product-variant.entity';
 import { ProductImageEntity } from './product-image.entity';
 import { ProductSupplierEntity } from './product-supplier.entity';
@@ -75,6 +76,8 @@ import { TransportationOrderItemEntity } from './transportation-order-item.entit
 import { GpsDeviceEntity } from './gps-device.entity';
 import { AlertEntity } from './alert.entity';
 import { EmailTemplateEntity } from './email-template.entity';
+import { QuickChargeEntity } from './quick-charge.entity';
+import { CustomerTypeRuleEntity } from './customer-type-rule.entity';
 
 export * from './location.entity';
 export * from './product-log.entity';
@@ -110,6 +113,7 @@ export * from './report-generation-log.entity';
 export * from './stock-entry.entity';
 export * from './stock-transfer.entity';
 export * from './stock-transfer-item.entity';
+export * from './stock-transfer-request.entity';
 export * from './product-variant.entity';
 export * from './product-image.entity';
 export * from './product-supplier.entity';
@@ -155,6 +159,8 @@ export * from './transportation-order-item.entity';
 export * from './gps-device.entity';
 export * from './alert.entity';
 export * from './email-template.entity';
+export * from './quick-charge.entity';
+export * from './customer-type-rule.entity';
 
 export default [
   LocationEntity,
@@ -188,6 +194,7 @@ export default [
   StockEntryEntity,
   StockTransferEntity,
   StockTransferItemEntity,
+  StockTransferRequestEntity,
   ProductVariantEntity,
   ProductImageEntity,
   ProductSupplierEntity,
@@ -233,4 +240,6 @@ export default [
   GpsDeviceEntity,
   AlertEntity,
   EmailTemplateEntity,
+  QuickChargeEntity,
+  CustomerTypeRuleEntity,
 ];

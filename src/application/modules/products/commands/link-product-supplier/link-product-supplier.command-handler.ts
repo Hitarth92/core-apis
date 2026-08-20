@@ -1,4 +1,4 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ICommandHandler } from '@nestjs/cqrs';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';

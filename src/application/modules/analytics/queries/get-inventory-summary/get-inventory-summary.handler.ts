@@ -4,7 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { QueryHandlerStrict } from 'src/common';
 import { GetInventorySummaryQuery } from './get-inventory-summary.query';
-import { InventorySummaryResponse } from '../../models/responses/inventory-summary.response';
+import { InventorySummaryResponse } from '../../models';
 
 interface RawInventorySummary {
   totalSkus: string;
@@ -21,6 +21,7 @@ const INVENTORY_SUMMARY_SQL = `
     COALESCE(SUM(quantity_on_hand * COALESCE(average_cost, 0)), 0) AS "totalValuation"
   FROM core.inventory
   WHERE organization_id = $1
+    AND ($2::uuid IS NULL OR location_id = $2)
 `;
 
 @QueryHandlerStrict(GetInventorySummaryQuery)
@@ -32,10 +33,13 @@ export class GetInventorySummaryHandler implements IQueryHandler<GetInventorySum
 
   public async execute(query: GetInventorySummaryQuery): Promise<InventorySummaryResponse> {
     this.logger.info(`Executing Query '${GetInventorySummaryQuery.name}'`);
-    const [summary] = await this.dataSource.query<RawInventorySummary[]>(INVENTORY_SUMMARY_SQL, [query.organizationId]);
+    const [summary] = await this.dataSource.query<RawInventorySummary[]>(INVENTORY_SUMMARY_SQL, [
+      query.organizationId,
+      query.locationId ?? null,
+    ]);
     return {
-      totalSkus:      Number(summary.totalSkus),
-      lowStockCount:  Number(summary.lowStockCount),
+      totalSkus: Number(summary.totalSkus),
+      lowStockCount: Number(summary.lowStockCount),
       zeroStockCount: Number(summary.zeroStockCount),
       totalValuation: Number(summary.totalValuation),
     };

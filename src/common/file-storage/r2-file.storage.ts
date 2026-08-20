@@ -207,6 +207,9 @@ export abstract class R2FileStorage implements IFileStorage, IFileUrlResolver {
   }
 
   private wrapError(err: unknown): Error {
-    return err instanceof Error ? err : new Error(String(err));
+    if (err instanceof Error) {
+      return err;
+    }
+    return new Error(typeof err === 'string' ? err : JSON.stringify(err));
   }
 }

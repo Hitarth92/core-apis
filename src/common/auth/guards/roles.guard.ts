@@ -3,12 +3,17 @@ import { Reflector } from '@nestjs/core';
 import { ERole } from '../../../infrastructure/persistence/entities/role.entity';
 import { ROLES_META_KEY } from '../constants';
 import { AuthenticatedUser } from '../types';
+import { shouldAllowAnonymous } from './should-allow-anonymous';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   public canActivate(context: ExecutionContext): boolean {
+    if (shouldAllowAnonymous(context, this.reflector)) {
+      return true;
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<ERole[]>(ROLES_META_KEY, [
       context.getHandler(),
       context.getClass(),

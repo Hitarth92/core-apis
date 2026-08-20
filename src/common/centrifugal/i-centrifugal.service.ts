@@ -28,8 +28,8 @@ export interface ICentrifugalService {
   generateClientToken(payload: CentrifugalTokenPayload, options?: TokenOptions): string;
 
   // Publishing methods
-  publish<TPayload = unknown>(channel: string, data: TPayload, options?: PublishOptions): Promise<PublishResponse>;
-  publishBatch<TPayload = unknown>(publications: Array<{ channel: string; data: TPayload; options?: PublishOptions }>): Promise<BatchPublishResult[]>;
+  publish<TPayload extends object = Record<string, unknown>>(channel: string, data: TPayload, options?: PublishOptions): Promise<PublishResponse>;
+  publishBatch<TPayload extends object = Record<string, unknown>>(publications: Array<{ channel: string; data: TPayload; options?: PublishOptions }>): Promise<BatchPublishResult[]>;
 
   // Connection management
   subscribe(request: SubscribeRequest): Promise<SubscribeResponse>;

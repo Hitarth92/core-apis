@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { BaseRepo } from '../../../common';
 import { Filter, PageableFilter } from '../../../common';
 import { FuelTransactionEntity } from '../entities';
-import { FuelTransaction } from '../../../application/modules/maintenance/domain/fuel-transaction.model';
+import { FuelTransaction } from '../../../application/modules/maintenance/domain';
 import { IFuelTransactionRepo } from '../../../application/modules/maintenance/repositories/i-fuel-transaction.repo';
 
 @Injectable()

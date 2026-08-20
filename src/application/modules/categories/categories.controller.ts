@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard } from '../../../common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard, assertOrgOwnership } from '../../../common';
 import { ERole } from '../../../infrastructure';
 import { CreateCategoryCommand, DeleteCategoryCommand, UpdateCategoryCommand } from './commands';
 import { Category } from './domain';
@@ -72,10 +72,11 @@ export class CategoriesController {
   @ApiParam({ name: 'id', description: 'Category UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<CategoryResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<CategoryResponse> {
     const query = new GetCategoryQuery();
     query.id = id;
     const result = await this.mediator.execute<GetCategoryQuery, Category>(query);
+    assertOrgOwnership(user, result.organizationId, 'Category');
     return this.mapper.map(result, Category, CategoryResponse);
   }
 
@@ -98,7 +99,11 @@ export class CategoriesController {
   @ApiParam({ name: 'id', description: 'Category UUID' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdateCategoryRequest): Promise<CategoryResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdateCategoryRequest, @CurrentUser() user: AuthenticatedUser): Promise<CategoryResponse> {
+    const fetchQuery = new GetCategoryQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetCategoryQuery, Category>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Category');
     const command = this.mapper.map(body, UpdateCategoryRequest, UpdateCategoryCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdateCategoryCommand, Category>(command);
@@ -110,7 +115,11 @@ export class CategoriesController {
   @ApiParam({ name: 'id', description: 'Category UUID' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
-  public async delete(@Param('id') id: string): Promise<boolean> {
+  public async delete(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<boolean> {
+    const fetchQuery = new GetCategoryQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetCategoryQuery, Category>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Category');
     const command = new DeleteCategoryCommand();
     command.id    = id;
     return this.mediator.execute<DeleteCategoryCommand, boolean>(command);

@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryHandlerStrict, IFilterNormalizer } from 'src/common';
 import { TRIP_REPO } from 'src/application/constants';

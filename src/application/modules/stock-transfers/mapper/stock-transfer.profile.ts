@@ -4,8 +4,9 @@ import { Injectable } from '@nestjs/common';
 import { StockTransferEntity } from '../../../../infrastructure/persistence/entities/stock-transfer.entity';
 import { TransferStockOperationInput } from 'src/application/shared';
 import { StockTransfer } from '../domain';
-import { CreateStockTransferRequest, StockTransferResponse, CompleteStockTransferRequest, CompleteTransferItemRequest } from '../models';
+import { CreateStockTransferRequest, StockTransferResponse, CompleteStockTransferRequest, CompleteTransferItemRequest, SearchStockTransfersRequest, ListStockTransfersRequest } from '../models';
 import { CreateStockTransferCommand, CompleteStockTransferCommand, CompleteTransferItemInput } from '../commands';
+import { SearchStockTransfersQuery, ListStockTransfersQuery } from '../queries';
 
 @Injectable()
 export class StockTransferProfile extends AutomapperProfile {
@@ -18,6 +19,8 @@ export class StockTransferProfile extends AutomapperProfile {
       createMap(mapper, CreateStockTransferRequest, CreateStockTransferCommand);
       createMap(mapper, CreateStockTransferCommand, StockTransfer);
       createMap(mapper, StockTransfer, StockTransferResponse);
+      createMap(mapper, SearchStockTransfersRequest, SearchStockTransfersQuery);
+      createMap(mapper, ListStockTransfersRequest, ListStockTransfersQuery);
       createMap(mapper, CompleteTransferItemRequest, CompleteTransferItemInput);
       createMap(mapper, CompleteTransferItemInput, TransferStockOperationInput);
       createMap(

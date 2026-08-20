@@ -9,3 +9,11 @@ export class StockTransferResponse {
   @ApiProperty() @AutoMap() public transferNumber: string;
   @ApiProperty() @AutoMap() public status: string;
 }
+
+export class StockTransfersPagedResponse {
+  @ApiProperty({ type: [StockTransferResponse] }) public items: StockTransferResponse[];
+  @ApiProperty() public page: number;
+  @ApiProperty() public perPage: number;
+  @ApiProperty() public totalCount: number;
+  @ApiProperty() public totalPages: number;
+}

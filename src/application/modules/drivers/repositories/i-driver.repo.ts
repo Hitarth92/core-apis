@@ -1,4 +1,4 @@
-import { IBaseRepo } from '../../../../common/db/i-base.repo';
-import { Driver } from '../domain/driver';
+import { IBaseRepo } from '../../../../common';
+import { Driver } from '../domain';
 
-export interface IDriverRepo extends IBaseRepo<Driver, string> {}
+export type IDriverRepo = IBaseRepo<Driver, string>;

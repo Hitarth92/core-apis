@@ -48,6 +48,14 @@ export class CustomerCreditTransactionEntity {
   @Column({ name: 'performed_by_id', type: 'uuid', nullable: true })
   public performedById?: string;
 
+  @AutoMap()
+  @Column({ name: 'payment_method', type: 'varchar', length: 50, nullable: true })
+  public paymentMethod?: string;
+
+  @AutoMap()
+  @Column({ name: 'note', type: 'varchar', length: 500, nullable: true })
+  public note?: string;
+
   @AutoMap(() => Date)
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   public createdAt: Date;

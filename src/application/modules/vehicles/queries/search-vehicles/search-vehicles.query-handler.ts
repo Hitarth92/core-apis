@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryHandlerStrict, IFilterNormalizer, IPageable } from 'src/common';
 import { VEHICLE_REPO } from 'src/application/constants';
 import { IVehicleRepo } from '../../repositories/i-vehicle.repo';
 import { Vehicle, VehicleFilter } from '../../domain';
-import { VehicleFilterNormalizer } from '../../helpers/vehicle-filter.normalizer';
+import { VehicleFilterNormalizer } from '../../helpers';
 import { SearchVehiclesQuery } from './search-vehicles.query';
 
 @QueryHandlerStrict(SearchVehiclesQuery)

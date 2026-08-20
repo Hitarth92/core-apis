@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
+import { FindManyOptions, MoreThan, Repository } from 'typeorm';
 import { BaseRepo, Filter, PageableFilter } from '../../../common';
 import { CustomerEntity } from '../entities';
 import { Customer } from '../../../application/modules/customers/domain';
@@ -25,5 +25,18 @@ export class CustomerRepo extends BaseRepo<CustomerEntity, Customer, string, Pag
 
   public override get softDeleteEnabled(): boolean {
     return true;
+  }
+
+  public override get specialFilterFields(): (keyof PageableFilter<CustomerFilter>)[] {
+    return [...super.specialFilterFields, 'hasCreditLimit'];
+  }
+
+  protected override modifyFindOption(
+    findOpts: FindManyOptions<CustomerEntity>,
+    filterObj: Filter<CustomerFilter> | PageableFilter<CustomerFilter>,
+  ): void {
+    if (filterObj.hasCreditLimit === true) {
+      (findOpts.where as Record<string, unknown>).creditLimit = MoreThan(0);
+    }
   }
 }

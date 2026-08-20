@@ -3,4 +3,4 @@ import { Location, LocationFilter } from 'src/application/modules/locations/doma
 
 export const LOCATION_REPO = 'LOCATION_REPO';
 
-export interface ILocationRepo extends IBaseRepo<Location, string, PageableFilter<LocationFilter>, Filter<LocationFilter>> {}
+export type ILocationRepo = IBaseRepo<Location, string, PageableFilter<LocationFilter>, Filter<LocationFilter>>;

@@ -18,9 +18,9 @@ export class ListActivityLogsQueryHandler implements IQueryHandler<ListActivityL
     @InjectPinoLogger(ListActivityLogsQueryHandler.name) private readonly logger: PinoLogger,
   ) {}
 
-  public async execute(_query: ListActivityLogsQuery): Promise<ActivityLogResponse[]> {
+  public async execute(query: ListActivityLogsQuery): Promise<ActivityLogResponse[]> {
     this.logger.info(`Executing ${ListActivityLogsQuery.name}`);
-    const items = await this.repo.allAsync();
+    const items = await this.repo.allAsync({ organizationId: query.organizationId });
     return this.mapper.mapArray(items, ActivityLog, ActivityLogResponse);
   }
 }

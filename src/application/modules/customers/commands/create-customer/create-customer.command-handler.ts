@@ -4,7 +4,8 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CommandHandlerStrict } from '../../../../../common';
-import { CUSTOMER_REPO } from '../../../../constants';
+import { CUSTOMER_REPO, CUSTOMER_TYPE_RULE_REPO } from '../../../../constants';
+import { ICustomerTypeRuleRepo } from '../../../billing-settings';
 import { Customer } from '../../domain';
 import { ICustomerRepo } from '../../i-customer.repo';
 import { CreateCustomerCommand } from './create-customer.command';
@@ -13,6 +14,7 @@ import { CreateCustomerCommand } from './create-customer.command';
 export class CreateCustomerCommandHandler implements ICommandHandler<CreateCustomerCommand, Customer> {
   constructor(
     @Inject(CUSTOMER_REPO) private readonly repo: ICustomerRepo,
+    @Inject(CUSTOMER_TYPE_RULE_REPO) private readonly typeRuleRepo: ICustomerTypeRuleRepo,
     @InjectMapper() private readonly mapper: Mapper,
     @InjectPinoLogger(CreateCustomerCommandHandler.name) private readonly logger: PinoLogger,
   ) {}
@@ -20,6 +22,15 @@ export class CreateCustomerCommandHandler implements ICommandHandler<CreateCusto
   public async execute(command: CreateCustomerCommand): Promise<Customer> {
     this.logger.info(`Executing ${CreateCustomerCommand.name}`);
     const customer = this.mapper.map(command, CreateCustomerCommand, Customer);
+    if (customer.creditLimit == null && customer.customerType) {
+      const rule = await this.typeRuleRepo.findOneAsync({
+        organizationId: customer.organizationId,
+        customerType: customer.customerType,
+      });
+      if (rule?.defaultCreditLimit != null) {
+        customer.creditLimit = rule.defaultCreditLimit;
+      }
+    }
     return this.repo.createAsync(customer);
   }
 }

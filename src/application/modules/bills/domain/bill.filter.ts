@@ -9,6 +9,7 @@ export interface BillFilter {
   status?: EBillStatus;
   paymentMethod?: EPaymentMethod;
   saleType?: ESaleType;
+  saleTypeNot?: ESaleType;
 }
 
 export interface BillItemFilter {

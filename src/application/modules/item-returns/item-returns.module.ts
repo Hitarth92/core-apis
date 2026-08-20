@@ -4,8 +4,8 @@ import { ItemReturnsController } from './item-returns.controller';
 import { ItemReturnCommandHandlers } from './commands';
 import { ItemReturnQueryHandlers } from './queries';
 import { ItemReturnProfile } from './mapper/item-return.profile';
-import { ItemReturnFeatureOptions } from './options/item-return-feature.options';
-import { ItemReturnFilterNormalizer } from './helpers/item-return-filter.normalizer';
+import { ItemReturnFeatureOptions } from './options';
+import { ItemReturnFilterNormalizer } from './helpers';
 
 @Module({
   imports: [CqrsModule],

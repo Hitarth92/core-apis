@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard } from '../../../common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, Roles, RolesGuard, assertOrgOwnership } from '../../../common';
 import { ERole } from '../../../infrastructure';
 import { CreateSupplierCommand, DeleteSupplierCommand, UpdateSupplierCommand } from './commands';
 import { Supplier } from './domain';
@@ -60,10 +60,11 @@ export class SuppliersController {
   @ApiParam({ name: 'id', description: 'Supplier UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<SupplierResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<SupplierResponse> {
     const query = new GetSupplierQuery();
     query.id = id;
     const result = await this.mediator.execute<GetSupplierQuery, Supplier>(query);
+    assertOrgOwnership(user, result.organizationId, 'Supplier');
     return this.mapper.map(result, Supplier, SupplierResponse);
   }
 
@@ -86,7 +87,11 @@ export class SuppliersController {
   @ApiParam({ name: 'id', description: 'Supplier UUID' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdateSupplierRequest): Promise<SupplierResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdateSupplierRequest, @CurrentUser() user: AuthenticatedUser): Promise<SupplierResponse> {
+    const fetchQuery = new GetSupplierQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetSupplierQuery, Supplier>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Supplier');
     const command = this.mapper.map(body, UpdateSupplierRequest, UpdateSupplierCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdateSupplierCommand, Supplier>(command);
@@ -98,7 +103,11 @@ export class SuppliersController {
   @ApiParam({ name: 'id', description: 'Supplier UUID' })
   @HttpCode(HttpStatus.OK)
   @Delete(':id')
-  public async delete(@Param('id') id: string): Promise<boolean> {
+  public async delete(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<boolean> {
+    const fetchQuery = new GetSupplierQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetSupplierQuery, Supplier>(fetchQuery);
+    assertOrgOwnership(user, existing.organizationId, 'Supplier');
     const command = new DeleteSupplierCommand();
     command.id    = id;
     return this.mediator.execute<DeleteSupplierCommand, boolean>(command);

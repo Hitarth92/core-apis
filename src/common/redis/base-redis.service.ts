@@ -340,7 +340,7 @@ export abstract class BaseRedisService implements OnApplicationBootstrap, IBaseR
     this.reconnecting = true;
 
     if (this.connected) {
-      this.redisClient.disconnect();
+      void this.redisClient.disconnect();
     }
 
     setTimeout(() => {

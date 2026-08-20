@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { RoleEntity } from '../../../../infrastructure/persistence/entities/role.entity';
 import { Role } from '../domain';
-import { CreateRoleRequest, UpdateRoleRequest, RoleResponse } from '../models';
+import { CreateRoleRequest, RoleResponse } from '../models';
 import { CreateRoleCommand } from '../commands';
 
 @Injectable()

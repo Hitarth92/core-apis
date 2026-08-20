@@ -5,7 +5,7 @@ import { QueryHandlerStrict, IFilterNormalizer } from '../../../../../common';
 import { ITEM_RETURN_REPO } from '../../../../constants';
 import { ItemReturn, ItemReturnFilter } from '../../domain';
 import { IItemReturnRepo } from '../..';
-import { ItemReturnFilterNormalizer } from '../../helpers/item-return-filter.normalizer';
+import { ItemReturnFilterNormalizer } from '../../helpers';
 import { ListItemReturnsQuery } from './list-item-returns.query';
 
 @QueryHandlerStrict(ListItemReturnsQuery)

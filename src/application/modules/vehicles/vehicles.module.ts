@@ -4,8 +4,8 @@ import { VehiclesController } from './vehicles.controller';
 import { VehicleCommandHandlers } from './commands';
 import { VehicleQueryHandlers } from './queries';
 import { VehicleProfile } from './mapper';
-import { VehicleFilterNormalizer } from './helpers/vehicle-filter.normalizer';
-import { VehicleFeatureOptions } from './options/vehicle-feature.options';
+import { VehicleFilterNormalizer } from './helpers';
+import { VehicleFeatureOptions } from './options';
 
 @Module({
   imports:     [CqrsModule],

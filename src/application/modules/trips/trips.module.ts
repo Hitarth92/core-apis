@@ -4,8 +4,8 @@ import { TripsController } from './trips.controller';
 import { TripCommandHandlers } from './commands';
 import { TripQueryHandlers } from './queries';
 import { TripProfile } from './mapper';
-import { TripFilterNormalizer } from './helpers/trip-filter.normalizer';
-import { TripFeatureOptions } from './options/trip-feature.options';
+import { TripFilterNormalizer } from './helpers';
+import { TripFeatureOptions } from './options';
 
 @Module({
   imports:     [CqrsModule],

@@ -1,9 +1,9 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { CqrsMediator } from '../../../common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, assertOrgOwnership, requireOrganizationId } from '../../../common';
 import { CreateActivityLogCommand } from './commands';
 import { ActivityLog } from './domain';
 import { CreateActivityLogRequest, ActivityLogResponse } from './models';
@@ -11,6 +11,7 @@ import { GetActivityLogQuery, ListActivityLogsQuery } from './queries';
 
 @ApiBearerAuth()
 @ApiTags('ActivityLogs')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'activity-logs', version: '1' })
 export class ActivityLogsController {
   constructor(
@@ -23,8 +24,9 @@ export class ActivityLogsController {
   @ApiOkResponse({ type: [ActivityLogResponse] })
   @HttpCode(HttpStatus.OK)
   @Get('list')
-  public async list(): Promise<ActivityLogResponse[]> {
+  public async list(@CurrentUser() user?: AuthenticatedUser): Promise<ActivityLogResponse[]> {
     const query = new ListActivityLogsQuery();
+    query.organizationId = requireOrganizationId(user);
     return this.mediator.execute<ListActivityLogsQuery, ActivityLogResponse[]>(query);
   }
 
@@ -33,10 +35,11 @@ export class ActivityLogsController {
   @ApiParam({ name: 'id', description: 'ActivityLog UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<ActivityLogResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user?: AuthenticatedUser): Promise<ActivityLogResponse> {
     const query = new GetActivityLogQuery();
     query.id = id;
     const result = await this.mediator.execute<GetActivityLogQuery, ActivityLog>(query);
+    assertOrgOwnership(user, result.organizationId, 'activity-log');
     return this.mapper.map(result, ActivityLog, ActivityLogResponse);
   }
 

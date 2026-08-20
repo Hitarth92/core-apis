@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IFilterNormalizer, Filter, PageableFilter } from '../../../../common';
 import { ReportGenerationLogFilter } from '../domain';
-import { ReportGenerationLogFeatureOptions } from '../options/report-generation-log-feature.options';
+import { ReportGenerationLogFeatureOptions } from '../options';
 
 @Injectable()
 export class ReportGenerationLogFilterNormalizer implements IFilterNormalizer<ReportGenerationLogFilter> {

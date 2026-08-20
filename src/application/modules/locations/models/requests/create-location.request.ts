@@ -1,6 +1,6 @@
 import { AutoMap } from '@automapper/classes';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ELocationType } from 'src/infrastructure/persistence/entities';
 
 export class CreateLocationRequest {
@@ -11,4 +11,6 @@ export class CreateLocationRequest {
   @ApiPropertyOptional() @IsOptional() @IsString() @AutoMap() public state?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @AutoMap() public country?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @AutoMap() public phone?: string;
+  @ApiPropertyOptional({ description: 'Required when the caller is SuperAdmin (org-less). Ignored for org-scoped callers.' })
+  @IsOptional() @IsUUID() @AutoMap() public organizationId?: string;
 }

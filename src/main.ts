@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SentryInterceptor } from '@ntegral/nestjs-sentry';
-import { RpcGlobalExceptionInterceptor } from './common';
+import { GlobalExceptionFilter, RpcGlobalExceptionInterceptor } from './common';
 import * as bodyParser from 'body-parser';
 import { Logger } from 'nestjs-pino';
 import { IApiOptions, ICoreApiConfig } from './configuration';
@@ -54,6 +54,7 @@ async function bootstrap(): Promise<void> {
   });
 
   app.useLogger(app.get(Logger));
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(
     new RpcGlobalExceptionInterceptor(),
     new SentryInterceptor(),
@@ -96,4 +97,4 @@ function addSwagger(app: INestApplication, globalPrefix: string): void {
   SwaggerModule.setup(`${globalPrefix}/docs`, app, document);
 }
 
-bootstrap();
+void bootstrap();

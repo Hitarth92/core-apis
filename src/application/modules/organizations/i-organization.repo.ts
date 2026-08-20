@@ -10,7 +10,6 @@ export interface OrganizationFilter {
 
 export const ORGANIZATION_REPO = 'ORGANIZATION_REPO';
 
-export interface IOrganizationRepo extends IBaseRepo<Organization, string, PageableFilter<OrganizationFilter>, Filter<OrganizationFilter>> {
-}
+export type IOrganizationRepo = IBaseRepo<Organization, string, PageableFilter<OrganizationFilter>, Filter<OrganizationFilter>>;
 
 

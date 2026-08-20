@@ -3,13 +3,11 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser } from '../../../common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, requireOrganizationId } from '../../../common';
 import { CreateMaintenanceRequest, MaintenanceResponse, MaintenanceTypeResponse, ListMaintenanceTypesRequest } from './models';
 import { CreateMaintenanceCommand } from './commands';
 import { ListMaintenanceTypesQuery } from './queries';
 import { Maintenance, MaintenanceType } from './domain';
-
-const FALLBACK_ORG_ID = '00000000-0000-4000-8000-000000000001';
 
 @ApiBearerAuth()
 @ApiTags('Maintenance')
@@ -31,7 +29,7 @@ export class MaintenanceController {
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<MaintenanceResponse> {
     const command           = this.mapper.map(body, CreateMaintenanceRequest, CreateMaintenanceCommand);
-    command.organizationId  = user?.organizationId ?? FALLBACK_ORG_ID;
+    command.organizationId  = requireOrganizationId(user);
     command.createdBy       = user?.dbUserId;
     const result            = await this.mediator.execute<CreateMaintenanceCommand, Maintenance>(command);
     return this.mapper.map(result, Maintenance, MaintenanceResponse);

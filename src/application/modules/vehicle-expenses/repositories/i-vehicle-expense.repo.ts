@@ -1,4 +1,4 @@
-import { IBaseRepo } from '../../../../common/db/i-base.repo';
-import { VehicleExpense } from '../domain/vehicle-expense.model';
+import { IBaseRepo } from '../../../../common';
+import { VehicleExpense } from '../domain';
 
-export interface IVehicleExpenseRepo extends IBaseRepo<VehicleExpense, string> {}
+export type IVehicleExpenseRepo = IBaseRepo<VehicleExpense, string>;

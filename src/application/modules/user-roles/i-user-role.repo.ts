@@ -3,4 +3,6 @@ import { UserRole } from './domain';
 
 export type UserRoleFilter = Record<string, never>;
 
-export type IUserRoleRepo = IBaseRepo<UserRole, string, PageableFilter<UserRoleFilter>, Filter<UserRoleFilter>>;
+export interface IUserRoleRepo extends IBaseRepo<UserRole, string, PageableFilter<UserRoleFilter>, Filter<UserRoleFilter>> {
+  allByOrganizationAsync(organizationId: string): Promise<UserRole[]>;
+}

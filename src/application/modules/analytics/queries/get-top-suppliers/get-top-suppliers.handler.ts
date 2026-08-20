@@ -4,7 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { QueryHandlerStrict } from 'src/common';
 import { GetTopSuppliersQuery } from './get-top-suppliers.query';
-import { TopSupplierResponse } from '../../models/responses/top-supplier.response';
+import { TopSupplierResponse } from '../../models';
 
 interface RawTopSupplier {
   supplierId: string;

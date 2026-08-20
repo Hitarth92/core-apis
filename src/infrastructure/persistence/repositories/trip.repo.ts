@@ -6,7 +6,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { BaseRepo, Filter, PageableFilter } from '../../../common';
 import { TripEntity } from '../entities';
-import { Trip } from '../../../application/modules/trips/domain/trip.model';
+import { Trip } from '../../../application/modules/trips/domain';
 import { ITripRepo } from '../../../application/modules/trips/repositories/i-trip.repo';
 
 @Injectable()

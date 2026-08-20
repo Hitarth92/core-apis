@@ -26,6 +26,12 @@ export class MeResponse {
   @ApiProperty() public isOnboarded: boolean;
   @ApiPropertyOptional({ type: OrganizationSummary }) public organization?: OrganizationSummary;
   @ApiPropertyOptional({ type: MembershipSummary }) public membership?: MembershipSummary;
+  @ApiProperty({ type: [String], description: 'Store location IDs the user is scoped to (empty if org-wide)' })
+  public locationIds: string[];
+  @ApiProperty({ description: 'True when the user can view all branches/locations' })
+  public hasOrgWideAccess: boolean;
+  @ApiPropertyOptional({ description: 'ISO 4217 currency code for display formatting' })
+  public currencyCode?: string;
 }
 
 export class SyncUserResponse {
@@ -43,9 +49,4 @@ export class OnboardOrganizationResponse {
   @ApiProperty() public organizationName: string;
   @ApiProperty() public membershipId: string;
   @ApiProperty() public role: string;
-}
-
-export class InviteMemberResponse {
-  @ApiProperty() public membershipId: string;
-  @ApiProperty() public status: string;
 }

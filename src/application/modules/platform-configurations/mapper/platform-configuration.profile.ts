@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { PlatformConfigurationEntity } from '../../../../infrastructure/persistence/entities/platform-configuration.entity';
 import { PlatformConfiguration } from '../domain';
-import { CreatePlatformConfigurationRequest, UpdatePlatformConfigurationRequest, PlatformConfigurationResponse } from '../models';
+import { CreatePlatformConfigurationRequest, PlatformConfigurationResponse } from '../models';
 import { CreatePlatformConfigurationCommand } from '../commands';
 
 @Injectable()

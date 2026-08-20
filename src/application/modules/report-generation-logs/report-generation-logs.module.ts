@@ -4,8 +4,8 @@ import { ReportGenerationLogsController } from './report-generation-logs.control
 import { ReportLogCommandHandlers } from './commands';
 import { ReportLogQueryHandlers } from './queries';
 import { ReportGenerationLogProfile } from './mapper/report-generation-log.profile';
-import { ReportGenerationLogFeatureOptions } from './options/report-generation-log-feature.options';
-import { ReportGenerationLogFilterNormalizer } from './helpers/report-generation-log-filter.normalizer';
+import { ReportGenerationLogFeatureOptions } from './options';
+import { ReportGenerationLogFilterNormalizer } from './helpers';
 
 @Module({
   imports: [CqrsModule],

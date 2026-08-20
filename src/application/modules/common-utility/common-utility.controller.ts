@@ -26,6 +26,7 @@ import { UpdatePageAccessCommand } from './commands';
 
 @ApiBearerAuth()
 @ApiTags('Common Utility')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'common-utility', version: '1' })
 export class CommonUtilityController {
   public constructor(
@@ -39,7 +40,6 @@ export class CommonUtilityController {
   @ApiOperation({ summary: 'Get all page-access configurations' })
   @ApiOkResponse({ type: [PageAccessConfigResponse] })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ClerkAuthGuard)
   @Get('page-access')
   public async getPageAccess(): Promise<PageAccessConfigResponse[]> {
     return this.mediator.execute<GetPageAccessQuery, PageAccessConfigResponse[]>(
@@ -50,7 +50,7 @@ export class CommonUtilityController {
   @ApiOperation({ summary: 'Bulk-upsert page-access configurations (SuperAdmin only)' })
   @ApiNoContentResponse()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(ERole.SuperAdmin)
   @Put('page-access')
   public async updatePageAccess(@Body() body: UpdatePageAccessRequest): Promise<void> {

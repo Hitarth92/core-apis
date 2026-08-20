@@ -4,7 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { QueryHandlerStrict } from 'src/common';
 import { GetTopCustomersQuery } from './get-top-customers.query';
-import { TopCustomerResponse } from '../../models/responses/top-customer.response';
+import { TopCustomerResponse } from '../../models';
 
 interface RawTopCustomer {
   customerId: string | null;

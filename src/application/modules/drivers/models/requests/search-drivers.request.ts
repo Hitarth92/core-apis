@@ -3,7 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PageableFilter } from 'src/common';
-import { DriverFilter } from '../../domain/driver-filter';
+import { DriverFilter } from '../../domain';
 import { ListDriversRequest } from './list-drivers.request';
 
 export class SearchDriversRequest extends ListDriversRequest implements PageableFilter<DriverFilter> {

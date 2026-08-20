@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
 import { AutoMap } from '@automapper/classes';
 import { ETripStatus } from '../../../../shared/enums/e-trip-status';
 

@@ -1,10 +1,11 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { CqrsMediator } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, RolesGuard, Roles } from '../../../common';
 import { IPageable } from '../../../common';
+import { ERole } from '../../../infrastructure';
 import { CreateOrganizationCommand, DeleteOrganizationCommand, UpdateOrganizationCommand } from './commands';
 import { Organization } from './domain';
 import { CreateOrganizationRequest, SearchOrganizationsRequest, ListOrganizationsRequest, OrganizationResponse, OrganizationsPagedResponse, UpdateOrganizationRequest } from './models';
@@ -12,6 +13,7 @@ import { GetOrganizationQuery, ListOrganizationsQuery, SearchOrganizationsQuery 
 
 @ApiBearerAuth()
 @ApiTags('Organizations')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'organizations', version: '1' })
 export class OrganizationsController {
   constructor(
@@ -23,6 +25,8 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Search organizations (paginated)' })
   @ApiOkResponse({ type: OrganizationsPagedResponse })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Get()
   public async search(@Query() filter?: SearchOrganizationsRequest): Promise<OrganizationsPagedResponse> {
     const query = this.mapper.map(filter, SearchOrganizationsRequest, SearchOrganizationsQuery);
@@ -36,6 +40,8 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'List all organizations' })
   @ApiOkResponse({ type: [OrganizationResponse] })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Get('list')
   public async list(@Query() filter?: ListOrganizationsRequest): Promise<OrganizationResponse[]> {
     const query = this.mapper.map(filter, ListOrganizationsRequest, ListOrganizationsQuery);
@@ -47,6 +53,8 @@ export class OrganizationsController {
   @ApiOkResponse({ type: OrganizationResponse })
   @ApiParam({ name: 'id', description: 'Organization UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Get(':id')
   public async getById(@Param('id') id: string): Promise<OrganizationResponse> {
     const query = new GetOrganizationQuery();
@@ -58,6 +66,8 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Create a new organization' })
   @ApiCreatedResponse({ type: OrganizationResponse })
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Post()
   public async create(@Body() body: CreateOrganizationRequest): Promise<OrganizationResponse> {
     const command = this.mapper.map(body, CreateOrganizationRequest, CreateOrganizationCommand);
@@ -69,6 +79,8 @@ export class OrganizationsController {
   @ApiOkResponse({ type: OrganizationResponse })
   @ApiParam({ name: 'id', description: 'Organization UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Put(':id')
   public async update(@Param('id') id: string, @Body() body: UpdateOrganizationRequest): Promise<OrganizationResponse> {
     const command = this.mapper.map(body, UpdateOrganizationRequest, UpdateOrganizationCommand);
@@ -81,6 +93,8 @@ export class OrganizationsController {
   @ApiOkResponse({ type: Boolean })
   @ApiParam({ name: 'id', description: 'Organization UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Delete(':id')
   public async delete(@Param('id') id: string): Promise<boolean> {
     const command = new DeleteOrganizationCommand();

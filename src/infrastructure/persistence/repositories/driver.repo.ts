@@ -6,7 +6,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { BaseRepo, Filter, PageableFilter } from '../../../common';
 import { DriverEntity } from '../entities';
-import { Driver } from '../../../application/modules/drivers/domain/driver';
+import { Driver } from '../../../application/modules/drivers/domain';
 import { IDriverRepo } from '../../../application/modules/drivers/repositories/i-driver.repo';
 
 @Injectable()

@@ -1,10 +1,13 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { CqrsMediator } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, RolesGuard, Roles, CurrentUser, AuthenticatedUser, assertOrgOwnership } from '../../../common';
 import { IPageable } from '../../../common';
+import { ERole } from '../../../infrastructure';
+import { GetLocationQuery } from '../locations/queries';
+import { Location } from '../locations/domain';
 import { CreateItemReturnCommand, DeleteItemReturnCommand, UpdateItemReturnCommand } from './commands';
 import { ItemReturn } from './domain';
 import { CreateItemReturnRequest, SearchItemReturnsRequest, ListItemReturnsRequest, ItemReturnResponse, ItemReturnsPagedResponse, UpdateItemReturnRequest } from './models';
@@ -12,6 +15,7 @@ import { GetItemReturnQuery, ListItemReturnsQuery, SearchItemReturnsQuery } from
 
 @ApiBearerAuth()
 @ApiTags('Item Returns')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'item-returns', version: '1' })
 export class ItemReturnsController {
   constructor(
@@ -48,10 +52,16 @@ export class ItemReturnsController {
   @ApiParam({ name: 'id', description: 'Item Return UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<ItemReturnResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ItemReturnResponse> {
     const query = new GetItemReturnQuery();
     query.id = id;
     const result = await this.mediator.execute<GetItemReturnQuery, ItemReturn>(query);
+
+    const locationQuery = new GetLocationQuery();
+    locationQuery.id = result.locationId;
+    const location = await this.mediator.execute<GetLocationQuery, Location>(locationQuery);
+    assertOrgOwnership(user, location.organizationId, 'item return');
+
     return this.mapper.map(result, ItemReturn, ItemReturnResponse);
   }
 
@@ -70,7 +80,16 @@ export class ItemReturnsController {
   @ApiParam({ name: 'id', description: 'Item Return UUID' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdateItemReturnRequest): Promise<ItemReturnResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdateItemReturnRequest, @CurrentUser() user: AuthenticatedUser): Promise<ItemReturnResponse> {
+    const getQuery = new GetItemReturnQuery();
+    getQuery.id = id;
+    const existing = await this.mediator.execute<GetItemReturnQuery, ItemReturn>(getQuery);
+
+    const locationQuery = new GetLocationQuery();
+    locationQuery.id = existing.locationId;
+    const location = await this.mediator.execute<GetLocationQuery, Location>(locationQuery);
+    assertOrgOwnership(user, location.organizationId, 'item return');
+
     const command = this.mapper.map(body, UpdateItemReturnRequest, UpdateItemReturnCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdateItemReturnCommand, ItemReturn>(command);
@@ -81,6 +100,8 @@ export class ItemReturnsController {
   @ApiOkResponse({ type: Boolean })
   @ApiParam({ name: 'id', description: 'Item Return UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.StoreManager, ERole.OrgManager, ERole.OrgAdmin, ERole.SuperAdmin)
   @Delete(':id')
   public async delete(@Param('id') id: string): Promise<boolean> {
     const command = new DeleteItemReturnCommand();

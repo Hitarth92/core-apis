@@ -7,8 +7,8 @@ import { IPushNotificationService } from './i-push-notification.service';
 import { PushNotificationPayload } from './domain';
 import { PushNotificationException } from './exceptions';
 
-const USER_CHANNEL_PREFIX = 'user';
-const ORG_CHANNEL_PREFIX = 'org';
+const USER_CHANNEL_PREFIX = 'user_';
+const ORG_CHANNEL_PREFIX = 'org_';
 
 @Injectable()
 export class PushNotificationService implements IPushNotificationService {
@@ -22,7 +22,7 @@ export class PushNotificationService implements IPushNotificationService {
     this.logger.info({ userId: payload.userId, type: payload.type }, 'Sending push notification');
     try {
       await this.persistAsync(payload);
-      const channel = `${USER_CHANNEL_PREFIX}:${payload.userId}`;
+      const channel = `${USER_CHANNEL_PREFIX}${payload.userId}`;
       await this.centrifugal.publish(channel, {
         type: payload.type,
         title: payload.title,
@@ -55,7 +55,7 @@ export class PushNotificationService implements IPushNotificationService {
   ): Promise<void> {
     this.logger.info({ organizationId, type }, 'Broadcasting org push notification');
     try {
-      const channel = `${ORG_CHANNEL_PREFIX}:${organizationId}`;
+      const channel = `${ORG_CHANNEL_PREFIX}${organizationId}`;
       await this.centrifugal.publish(channel, { type, title, body, data: data ?? {} });
       this.logger.info({ organizationId }, 'Org broadcast sent');
     } catch (err) {

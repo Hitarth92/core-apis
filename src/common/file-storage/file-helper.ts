@@ -1,5 +1,4 @@
 import { extname, basename, dirname, join } from "path";
-import { fromBuffer } from "file-type";
 import { EMPTY_STR, isNil } from "..";
 import { IComparePathOptions, IFileName, IFileType } from "./types";
 import { ArgumentNilException } from "../exceptions";
@@ -44,7 +43,9 @@ export class FileHelper {
   }
 
   public async getExtFromBufferAsync(data: Buffer): Promise<IFileType> {
-    const type = await fromBuffer(data);
+    // file-type is ESM-only since v17 — dynamic import from this CommonJS module.
+    const { fileTypeFromBuffer } = await import("file-type");
+    const type = await fileTypeFromBuffer(data);
     if (!isNil(type)) {
       return type;
     }

@@ -1,9 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { ICommandHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { CommandHandlerStrict } from '../../../../../common';
+import { CommandHandlerStrict, OrganizationNotFoundException } from '../../../../../common';
 import { ORGANIZATION_REPO, ROLE_REPO, USER_REPO, ORG_MEMBER_REPO } from '../../../../constants';
 import { Organization } from '../../../organizations/domain';
 import { IOrganizationRepo } from '../../../organizations';
@@ -29,7 +27,6 @@ export class OnboardOrganizationCommandHandler
     @Inject(USER_REPO) private readonly userRepo: IUserRepo,
     @Inject(ROLE_REPO) private readonly roleRepo: IRoleRepo,
     @Inject(ORG_MEMBER_REPO) private readonly orgMemberRepo: IOrgMemberRepo,
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectPinoLogger(OnboardOrganizationCommandHandler.name)
     private readonly logger: PinoLogger,
   ) {}
@@ -37,11 +34,25 @@ export class OnboardOrganizationCommandHandler
   public async execute(command: OnboardOrganizationCommand): Promise<OnboardOrganizationResult> {
     this.logger.info({ dbUserId: command.dbUserId }, 'Onboarding organization');
 
+    const existingUser = await this.userRepo.getAsync(command.dbUserId);
+    if (existingUser?.organizationId) {
+      const organization = await this.orgRepo.getAsync(existingUser.organizationId);
+      if (!organization) throw new OrganizationNotFoundException(existingUser.organizationId);
+      const membership = await this.orgMemberRepo.findByUserAndOrgAsync(existingUser.id, existingUser.organizationId);
+      if (!membership) {
+        throw new OrganizationNotFoundException(existingUser.organizationId);
+      }
+      const roles = await this.roleRepo.allAsync();
+      const roleName = roles.find((r) => r.id === membership.roleId)?.name ?? '';
+      return { organization, membership, roleName };
+    }
+
     const completedSteps: string[] = [];
+    let org: Organization | undefined;
 
     try {
       // Step 1 — create organization
-      const org = await this.orgRepo.createAsync({
+      org = await this.orgRepo.createAsync({
         name: command.name,
         slug: command.slug,
         clerkOrgId: command.clerkOrgId,
@@ -83,10 +94,8 @@ export class OnboardOrganizationCommandHandler
         const user = await this.userRepo.getAsync(command.dbUserId).catch(() => null);
         if (user) await this.userRepo.updateAsync({ ...user, organizationId: null });
       }
-      if (completedSteps.includes('org_created')) {
-        const orgList = await this.orgRepo.allAsync();
-        const createdOrg = orgList.find((o) => o.name === command.name && o.clerkOrgId === command.clerkOrgId);
-        if (createdOrg) await this.orgRepo.deleteAsync(createdOrg.id, true);
+      if (completedSteps.includes('org_created') && org) {
+        await this.orgRepo.deleteAsync(org.id, true);
       }
 
       throw err;

@@ -14,6 +14,7 @@ export class PurchaseOrdersSeed extends BaseSeed<PurchaseOrderEntity> {
     return [
       {
         poNumber: 'PO-2026-00001',
+        organizationId: '00000000-0000-4000-8000-000000000001',
         supplierId: '00000000-0000-4000-8000-000000000004',
         locationId: '00000000-0000-4000-8000-000000000002',
         status: EPurchaseOrderStatus.Received,

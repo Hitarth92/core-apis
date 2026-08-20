@@ -25,7 +25,7 @@ export class NotificationEntity {
 
   @AutoMap()
   @Column({ name: 'org_id', type: 'uuid' })
-  public organizationId: string;
+  public orgId: string;
 
   @AutoMap()
   @Column({ type: 'varchar', length: 50 })

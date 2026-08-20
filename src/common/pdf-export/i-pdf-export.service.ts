@@ -1,5 +1,5 @@
 import { PdfDocument } from './domain';
-import { PdfOptions } from './domain/pdf-options';
+import { PdfOptions } from './domain';
 
 export const PDF_EXPORT_SERVICE = 'IPdfExportService';
 

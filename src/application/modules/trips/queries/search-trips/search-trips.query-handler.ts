@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
-import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
+import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryHandlerStrict, IFilterNormalizer, IPageable } from 'src/common';
 import { TRIP_REPO } from 'src/application/constants';
 import { ITripRepo } from '../../repositories/i-trip.repo';
 import { Trip, TripFilter } from '../../domain';
-import { TripFilterNormalizer } from '../../helpers/trip-filter.normalizer';
+import { TripFilterNormalizer } from '../../helpers';
 import { SearchTripsQuery } from './search-trips.query';
 
 @QueryHandlerStrict(SearchTripsQuery)

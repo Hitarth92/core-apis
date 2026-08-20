@@ -27,7 +27,7 @@ export class PhoneParser {
           this._isValid = false;
         }
       }
-    } catch (err) {
+    } catch {
       this._isValid = false;
     }
   }

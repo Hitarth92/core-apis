@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, CurrentUser, AuthenticatedUser, Roles, RolesGuard, InventoryNotOwnedByOrgException } from 'src/common';
+import { ClerkAuthGuard, CqrsMediator, CurrentUser, AuthenticatedUser, Roles, RolesGuard, InventoryNotOwnedByOrgException, assertLocationAccess } from 'src/common';
 import { ERole } from 'src/infrastructure/persistence/entities/role.entity';
 import { AddUnpublishedStockCommand, PublishUnpublishedStockCommand } from './commands';
 import { UnpublishedStock, UnpublishedStockMovement } from './domain';
@@ -74,6 +74,7 @@ export class UnpublishedStockController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('add')
   public async addStock(@CurrentUser() user: AuthenticatedUser, @Body() body: AddUnpublishedStockRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, AddUnpublishedStockRequest, AddUnpublishedStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -86,6 +87,10 @@ export class UnpublishedStockController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('publish')
   public async publishStock(@CurrentUser() user: AuthenticatedUser, @Body() body: PublishUnpublishedStockRequest): Promise<void> {
+    const existingQuery = new GetUnpublishedStockQuery();
+    existingQuery.id = body.unpublishedStockId;
+    const existing = await this.mediator.execute<GetUnpublishedStockQuery, UnpublishedStock>(existingQuery);
+    assertLocationAccess(user, existing.locationId);
     const command          = this.mapper.map(body, PublishUnpublishedStockRequest, PublishUnpublishedStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;

@@ -4,8 +4,8 @@ import { NotificationsController } from './notifications.controller';
 import { NotificationCommandHandlers } from './commands';
 import { NotificationQueryHandlers } from './queries';
 import { NotificationProfile } from './mapper/notification.profile';
-import { NotificationFeatureOptions } from './options/notification-feature.options';
-import { NotificationFilterNormalizer } from './helpers/notification-filter.normalizer';
+import { NotificationFeatureOptions } from './options';
+import { NotificationFilterNormalizer } from './helpers';
 
 @Module({
   imports: [CqrsModule],

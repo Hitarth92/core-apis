@@ -1,4 +1,4 @@
-import { IBaseRepo } from '../../../../common/db/i-base.repo';
-import { FuelTransaction } from '../domain/fuel-transaction.model';
+import { IBaseRepo } from '../../../../common';
+import { FuelTransaction } from '../domain';
 
-export interface IFuelTransactionRepo extends IBaseRepo<FuelTransaction, string> {}
+export type IFuelTransactionRepo = IBaseRepo<FuelTransaction, string>;

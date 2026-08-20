@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IFilterNormalizer, Filter, PageableFilter } from '../../../../common';
 import { ItemReturnFilter } from '../domain';
-import { ItemReturnFeatureOptions } from '../options/item-return-feature.options';
+import { ItemReturnFeatureOptions } from '../options';
 
 @Injectable()
 export class ItemReturnFilterNormalizer implements IFilterNormalizer<ItemReturnFilter> {

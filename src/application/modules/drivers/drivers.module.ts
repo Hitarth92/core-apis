@@ -4,8 +4,8 @@ import { DriversController } from './drivers.controller';
 import { DriverCommandHandlers } from './commands';
 import { DriverQueryHandlers } from './queries';
 import { DriverProfile } from './mapper';
-import { DriverFilterNormalizer } from './helpers/driver-filter.normalizer';
-import { DriverFeatureOptions } from './options/driver-feature.options';
+import { DriverFilterNormalizer } from './helpers';
+import { DriverFeatureOptions } from './options';
 
 @Module({
   imports:     [CqrsModule],

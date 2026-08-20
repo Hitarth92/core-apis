@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IFilterNormalizer, Filter, PageableFilter } from '../../../../common';
 import { NotificationFilter } from '../domain';
-import { NotificationFeatureOptions } from '../options/notification-feature.options';
+import { NotificationFeatureOptions } from '../options';
 
 @Injectable()
 export class NotificationFilterNormalizer implements IFilterNormalizer<NotificationFilter> {

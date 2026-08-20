@@ -5,7 +5,7 @@ import { OrdersController } from './orders.controller';
 import { OrderCommandHandlers } from './commands';
 import { OrderQueryHandlers } from './queries';
 import { OrderProfile } from './mapper';
-import { MailOptions } from '../../../common/mail';
+import { MailOptions } from '../../../common';
 import { ICoreApiConfig } from '../../../configuration';
 import { OrdersMailService } from './mail';
 

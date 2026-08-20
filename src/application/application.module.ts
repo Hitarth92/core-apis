@@ -14,6 +14,7 @@ import { OrdersModule } from './modules/orders';
 import { InvoicesModule } from './modules/invoices';
 import { StockTransfersModule } from './modules/stock-transfers';
 import { ExpensesModule } from './modules/expenses';
+import { BillingSettingsModule } from './modules/billing-settings';
 import { PlatformConfigurationsModule } from './modules/platform-configurations';
 import { UsersModule } from './modules/users';
 import { RolesModule } from './modules/roles';
@@ -64,6 +65,7 @@ export class ApplicationModule {
         InvoicesModule,
         StockTransfersModule,
         ExpensesModule,
+        BillingSettingsModule,
         PlatformConfigurationsModule,
         UsersModule,
         RolesModule,

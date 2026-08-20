@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable } from '../../../common';
+import { AuthenticatedUser, ClerkAuthGuard, CqrsMediator, CurrentUser, IPageable, RolesGuard, Roles, requireOrganizationId, assertOrgOwnership } from '../../../common';
 import {
   GetVehicleQuery, SearchVehiclesQuery, ListVehiclesQuery,
   ListVehicleTypesQuery, ListVehicleBrandsQuery, ListFuelTypesQuery,
@@ -15,8 +15,7 @@ import {
 } from './models';
 import { Vehicle, VehicleType, VehicleBrand, FuelType } from './domain';
 import { CreateVehicleCommand, DeleteVehicleCommand, UpdateVehicleCommand } from './commands';
-
-const FALLBACK_ORG_ID = '00000000-0000-4000-8000-000000000001';
+import { ERole } from '../../../infrastructure';
 
 @ApiBearerAuth()
 @ApiTags('Vehicles')
@@ -54,10 +53,11 @@ export class VehiclesController {
   @ApiParam({ name: 'id', description: 'Vehicle UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<VehicleResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<VehicleResponse> {
     const query  = new GetVehicleQuery();
     query.id     = id;
     const result = await this.mediator.execute<GetVehicleQuery, Vehicle>(query);
+    assertOrgOwnership(user, result.companyId, 'Vehicle');
     return this.mapper.map(result, Vehicle, VehicleResponse);
   }
 
@@ -70,7 +70,7 @@ export class VehiclesController {
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<VehicleResponse> {
     const command       = this.mapper.map(body, CreateVehicleRequest, CreateVehicleCommand);
-    command.companyId   = user?.organizationId ?? FALLBACK_ORG_ID;
+    command.companyId   = requireOrganizationId(user);
     const result        = await this.mediator.execute<CreateVehicleCommand, Vehicle>(command);
     return this.mapper.map(result, Vehicle, VehicleResponse);
   }
@@ -80,7 +80,11 @@ export class VehiclesController {
   @ApiParam({ name: 'id', description: 'Vehicle UUID' })
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdateVehicleRequest): Promise<VehicleResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdateVehicleRequest, @CurrentUser() user: AuthenticatedUser): Promise<VehicleResponse> {
+    const fetchQuery = new GetVehicleQuery();
+    fetchQuery.id = id;
+    const existing = await this.mediator.execute<GetVehicleQuery, Vehicle>(fetchQuery);
+    assertOrgOwnership(user, existing.companyId, 'Vehicle');
     const command = this.mapper.map(body, UpdateVehicleRequest, UpdateVehicleCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdateVehicleCommand, Vehicle>(command);
@@ -91,6 +95,8 @@ export class VehiclesController {
   @ApiOkResponse({ type: Boolean })
   @ApiParam({ name: 'id', description: 'Vehicle UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.StoreManager, ERole.OrgManager, ERole.OrgAdmin, ERole.SuperAdmin)
   @Delete(':id')
   public async delete(@Param('id') id: string): Promise<boolean> {
     const command = new DeleteVehicleCommand(id);

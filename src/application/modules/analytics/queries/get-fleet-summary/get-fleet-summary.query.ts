@@ -1,3 +1,5 @@
 ﻿import { QueryBase } from 'src/common';
 
-export class GetFleetSummaryKpisQuery extends QueryBase {}
+export class GetFleetSummaryKpisQuery extends QueryBase {
+  public organizationId: string;
+}

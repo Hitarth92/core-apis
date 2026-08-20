@@ -18,9 +18,16 @@ export class ListExpensesQueryHandler implements IQueryHandler<ListExpensesQuery
     @InjectPinoLogger(ListExpensesQueryHandler.name) private readonly logger: PinoLogger,
   ) {}
 
-  public async execute(_query: ListExpensesQuery): Promise<ExpenseResponse[]> {
+  public async execute(query: ListExpensesQuery): Promise<ExpenseResponse[]> {
     this.logger.info(`Executing ${ListExpensesQuery.name}`);
-    const expenses = await this.repo.allAsync();
+    let expenses = await this.repo.allAsync();
+    // ponytail: in-memory org/status filter until ExpenseRepo grows a Filter
+    if (query.organizationId) {
+      expenses = expenses.filter((expense) => expense.organizationId === query.organizationId);
+    }
+    if (query.status) {
+      expenses = expenses.filter((expense) => expense.status === query.status);
+    }
     return this.mapper.mapArray(expenses, Expense, ExpenseResponse);
   }
 }

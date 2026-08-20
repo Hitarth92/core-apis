@@ -98,7 +98,7 @@ export class CentrifugalService implements ICentrifugalService {
    * @param data - message payload
    * @param options - publish options
    */
-  public async publish<T>(channel: string, data: T, options: PublishOptions = {}): Promise<PublishResponse> {
+  public async publish<T extends object>(channel: string, data: T, options: PublishOptions = {}): Promise<PublishResponse> {
     try {
       this.validateChannel(channel);
 
@@ -267,7 +267,7 @@ export class CentrifugalService implements ICentrifugalService {
   /**
    * Publish to multiple channels at once
    */
-  public async publishBatch<TPayload = unknown>(publications: Array<{ channel: string; data: TPayload; options?: PublishOptions }>): Promise<BatchPublishResult[]> {
+  public async publishBatch<TPayload extends object = Record<string, unknown>>(publications: Array<{ channel: string; data: TPayload; options?: PublishOptions }>): Promise<BatchPublishResult[]> {
     const settled = await Promise.allSettled(publications.map((pub) => this.publish(pub.channel, pub.data, pub.options)));
 
     const results: BatchPublishResult[] = settled.map((outcome, index) => ({

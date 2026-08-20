@@ -11,5 +11,4 @@ export interface CategoryFilter {
 }
 export const CATEGORY_REPO = 'CATEGORY_REPO';
 
-export interface ICategoryRepo extends IBaseRepo<Category, string, PageableFilter<CategoryFilter>, Filter<CategoryFilter>> {
-}
+export type ICategoryRepo = IBaseRepo<Category, string, PageableFilter<CategoryFilter>, Filter<CategoryFilter>>;

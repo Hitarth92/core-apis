@@ -6,7 +6,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { BaseRepo, Filter, PageableFilter } from '../../../common';
 import { EmailTemplateEntity } from '../entities';
-import { EmailTemplate, IEmailTemplateRepo } from '../../../common/mail';
+import { EmailTemplate, IEmailTemplateRepo } from '../../../common';
 
 @Injectable()
 export class EmailTemplateRepo

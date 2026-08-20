@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -15,23 +15,20 @@ import {
   ClerkAuthGuard,
   CqrsMediator,
   CurrentUser,
-  Roles,
-  RolesGuard,
+  isDev,
+  isLocal,
+  isTest,
 } from '../../../common';
-import { ERole } from '../../../infrastructure';
 import { SyncUserCommand } from './commands/sync-user';
 import { OnboardOrganizationCommand, OnboardOrganizationResult } from './commands/onboard-organization';
-import { InviteMemberCommand } from './commands/invite-member';
 import { GetMeQuery, MeResult } from './queries/get-me';
 import { GetTokenQuery } from './queries/get-token';
 import {
   GetTokenRequest,
-  InviteMemberRequest,
   OnboardOrganizationRequest,
   MeResponse,
   SyncUserResponse,
   OnboardOrganizationResponse,
-  InviteMemberResponse,
   TokenResponse,
   OrganizationSummary,
   MembershipSummary,
@@ -59,6 +56,9 @@ export class AuthController {
   @AllowAnonymous()
   @Post('token')
   public async getToken(@Body() body: GetTokenRequest): Promise<TokenResponse> {
+    if (!isDev() && !isLocal() && !isTest()) {
+      throw new ForbiddenException('Token minting is disabled outside development');
+    }
     const query   = new GetTokenQuery();
     query.userId  = body.userId;
     const token = await this.mediator.execute<GetTokenQuery, string>(query);
@@ -108,7 +108,7 @@ export class AuthController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Body() body: OnboardOrganizationRequest,
   ): Promise<OnboardOrganizationResponse> {
-    if (!currentUser.isOnboarded) {
+    if (!currentUser.organizationId) {
       const syncCmd = new SyncUserCommand();
       syncCmd.clerkUserId = currentUser.clerkUserId;
       syncCmd.email = currentUser.email;
@@ -117,6 +117,7 @@ export class AuthController {
       syncCmd.imageUrl = currentUser.imageUrl;
       const syncedUser = await this.mediator.execute<SyncUserCommand, User>(syncCmd);
       currentUser.dbUserId = syncedUser.id;
+      currentUser.organizationId = syncedUser.organizationId;
     }
 
     const command = new OnboardOrganizationCommand();
@@ -135,31 +136,6 @@ export class AuthController {
       membershipId: result.membership.id,
       role: result.roleName,
     };
-  }
-
-  // ── POST /auth/invite ────────────────────────────────────────────────────────
-  @ApiOperation({
-    summary: 'Invite a member to your organization',
-    description: 'OrgAdmin or SuperAdmin only. The invitee must have already signed up via Clerk.',
-  })
-  @ApiCreatedResponse({ type: InviteMemberResponse })
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RolesGuard)
-  @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
-  @Post('invite')
-  public async inviteMember(
-    @CurrentUser() currentUser: AuthenticatedUser,
-    @Body() body: InviteMemberRequest,
-  ): Promise<InviteMemberResponse> {
-    const command = new InviteMemberCommand();
-    command.organizationId = currentUser.organizationId;
-    command.invitedByUserId = currentUser.dbUserId;
-    command.email = body.email;
-    command.roleId = body.roleId;
-
-    const membership = await this.mediator.execute<InviteMemberCommand, any>(command);
-
-    return { membershipId: membership.id, status: membership.status };
   }
 
   // ── GET /auth/me ─────────────────────────────────────────────────────────────
@@ -184,6 +160,8 @@ export class AuthController {
         isOnboarded: false,
         organization: undefined,
         membership: undefined,
+        locationIds: [],
+        hasOrgWideAccess: false,
       };
     }
 
@@ -222,6 +200,17 @@ export class AuthController {
       isOnboarded: true,
       organization: orgSummary,
       membership: membershipSummary,
+      locationIds: currentUser.locationIds ?? [],
+      hasOrgWideAccess: currentUser.hasOrgWideAccess ?? false,
+      currencyCode: resolveCurrencyCode(result.organization?.country),
     };
   }
+}
+
+function resolveCurrencyCode(country?: string): string {
+  const c = (country ?? '').toLowerCase();
+  if (c.includes('kenya') || c === 'ke') return 'KES';
+  if (c.includes('india') || c === 'in') return 'INR';
+  if (c.includes('united states') || c === 'us' || c === 'usa') return 'USD';
+  return 'KES';
 }

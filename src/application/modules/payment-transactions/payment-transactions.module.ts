@@ -4,8 +4,8 @@ import { PaymentTransactionsController } from './payment-transactions.controller
 import { PaymentTransactionCommandHandlers } from './commands';
 import { PaymentTransactionQueryHandlers } from './queries';
 import { PaymentTransactionProfile } from './mapper/payment-transaction.profile';
-import { PaymentTransactionFeatureOptions } from './options/payment-transaction-feature.options';
-import { PaymentTransactionFilterNormalizer } from './helpers/payment-transaction-filter.normalizer';
+import { PaymentTransactionFeatureOptions } from './options';
+import { PaymentTransactionFilterNormalizer } from './helpers';
 
 @Module({
   imports: [CqrsModule],

@@ -11,6 +11,8 @@ export class Customer {
   @AutoMap() public creditLimit?: number;
   @AutoMap() public creditBalance: number;
   @AutoMap(() => String) public customerType?: ECustomerType;
+  @AutoMap() public discountPercent?: number | null;
+  @AutoMap() public skipOverLimitApproval?: boolean | null;
   @AutoMap(() => Date) public createdAt: Date;
   @AutoMap(() => Date) public updatedAt?: Date;
   @AutoMap(() => Date) public deletedAt?: Date;

@@ -1,9 +1,10 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { CqrsMediator } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, RolesGuard, Roles } from '../../../common';
+import { ERole } from '../../../infrastructure';
 import { CreateRoleCommand } from './commands';
 import { Role } from './domain';
 import { CreateRoleRequest, RoleResponse } from './models';
@@ -11,6 +12,7 @@ import { GetRoleQuery, ListRolesQuery } from './queries';
 
 @ApiBearerAuth()
 @ApiTags('Roles')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'roles', version: '1' })
 export class RolesController {
   constructor(
@@ -43,6 +45,8 @@ export class RolesController {
   @ApiOperation({ summary: 'Create a new role' })
   @ApiCreatedResponse({ type: RoleResponse })
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.SuperAdmin)
   @Post()
   public async create(@Body() body: CreateRoleRequest): Promise<RoleResponse> {
     const command = this.mapper.map(body, CreateRoleRequest, CreateRoleCommand);

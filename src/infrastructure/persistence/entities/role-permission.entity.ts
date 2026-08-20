@@ -1,6 +1,5 @@
 import { AutoMap } from '@automapper/classes';
 import {
-  Column,
   Entity,
   JoinColumn,
   ManyToOne,

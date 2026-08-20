@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { ActivityLogEntity } from '../../../../infrastructure/persistence/entities/activity-log.entity';
 import { ActivityLog } from '../domain';
-import { CreateActivityLogRequest, UpdateActivityLogRequest, ActivityLogResponse } from '../models';
+import { CreateActivityLogRequest, ActivityLogResponse } from '../models';
 import { CreateActivityLogCommand } from '../commands';
 
 @Injectable()

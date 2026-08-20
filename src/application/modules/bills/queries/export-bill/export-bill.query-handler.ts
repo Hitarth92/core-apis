@@ -4,7 +4,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryHandlerStrict } from '../../../../../common';
 import { BILL_REPO } from '../../../../constants';
 import { IBillRepo } from '../..';
-import { PDF_EXPORT_SERVICE, IPdfExportService, PdfDocument } from '../../../../../common/pdf-export';
+import { PDF_EXPORT_SERVICE, IPdfExportService, PdfDocument } from '../../../../../common';
 import { ExportBillQuery } from './export-bill.query';
 import { Bill, BillItem } from '../../domain';
 

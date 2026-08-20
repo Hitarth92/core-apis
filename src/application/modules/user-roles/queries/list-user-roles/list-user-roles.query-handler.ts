@@ -18,9 +18,11 @@ export class ListUserRolesQueryHandler implements IQueryHandler<ListUserRolesQue
     @InjectPinoLogger(ListUserRolesQueryHandler.name) private readonly logger: PinoLogger,
   ) {}
 
-  public async execute(_query: ListUserRolesQuery): Promise<UserRoleResponse[]> {
+  public async execute(query: ListUserRolesQuery): Promise<UserRoleResponse[]> {
     this.logger.info(`Executing ${ListUserRolesQuery.name}`);
-    const items = await this.repo.allAsync();
+    const items = query.organizationId
+      ? await this.repo.allByOrganizationAsync(query.organizationId)
+      : await this.repo.allAsync();
     return this.mapper.mapArray(items, UserRole, UserRoleResponse);
   }
 }

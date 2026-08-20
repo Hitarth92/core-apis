@@ -3,7 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PageableFilter } from 'src/common';
-import { TripFilter } from '../../domain/trip-filter';
+import { TripFilter } from '../../domain';
 import { ListTripsRequest } from './list-trips.request';
 
 export class SearchTripsRequest extends ListTripsRequest implements PageableFilter<TripFilter> {

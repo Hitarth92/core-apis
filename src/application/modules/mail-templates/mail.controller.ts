@@ -1,13 +1,15 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard } from '../../../common';
-import { AppMailService } from '../../../common/mail';
+import { ClerkAuthGuard, Roles, RolesGuard } from '../../../common';
+import { ERole } from '../../../infrastructure';
+import { AppMailService } from '../../../common';
 import { SendTestMailRequest } from './models';
 
 @ApiBearerAuth()
 @ApiTags('Mail')
-@UseGuards(ClerkAuthGuard)
+@UseGuards(ClerkAuthGuard, RolesGuard)
+@Roles(ERole.SuperAdmin)
 @Controller({ path: 'mail', version: '1' })
 export class MailController {
   constructor(

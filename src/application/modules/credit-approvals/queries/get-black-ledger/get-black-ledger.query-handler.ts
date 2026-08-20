@@ -1,13 +1,13 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler } from '@nestjs/cqrs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { Filter, QueryHandlerStrict } from '../../../../../common';
+import { QueryHandlerStrict } from '../../../../../common';
 import { BILL_REPO, COMMISSION_PAYABLE_REPO } from '../../../../constants';
 import { ESaleType } from '../../../../../infrastructure/persistence/entities';
-import { Bill, BillFilter } from '../../../bills/domain';
+import { Bill } from '../../../bills/domain';
 import { IBillRepo } from '../../../bills';
 import { CommissionPayable } from '../../domain';
-import { CommissionPayableFilter, ICommissionPayableRepo } from '../../i-commission-payable.repo';
+import { ICommissionPayableRepo } from '../../i-commission-payable.repo';
 import { GetBlackLedgerQuery } from './get-black-ledger.query';
 
 export interface BlackLedgerResult {

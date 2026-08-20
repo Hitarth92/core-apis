@@ -1,10 +1,11 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { CqrsMediator } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, RolesGuard, Roles, AuthenticatedUser, CurrentUser, requireOrganizationId, assertOrgOwnership } from '../../../common';
 import { IPageable } from '../../../common';
+import { ERole } from '../../../infrastructure';
 import { CreatePaymentTransactionCommand, DeletePaymentTransactionCommand, UpdatePaymentTransactionCommand } from './commands';
 import { PaymentTransaction } from './domain';
 import { CreatePaymentTransactionRequest, SearchPaymentTransactionsRequest, ListPaymentTransactionsRequest, PaymentTransactionResponse, PaymentTransactionsPagedResponse, UpdatePaymentTransactionRequest } from './models';
@@ -12,6 +13,7 @@ import { GetPaymentTransactionQuery, ListPaymentTransactionsQuery, SearchPayment
 
 @ApiBearerAuth()
 @ApiTags('Payment Transactions')
+@UseGuards(ClerkAuthGuard)
 @Controller({ path: 'payment-transactions', version: '1' })
 export class PaymentTransactionsController {
   constructor(
@@ -24,8 +26,14 @@ export class PaymentTransactionsController {
   @ApiOkResponse({ type: PaymentTransactionsPagedResponse })
   @HttpCode(HttpStatus.OK)
   @Get()
-  public async search(@Query() filter?: SearchPaymentTransactionsRequest): Promise<PaymentTransactionsPagedResponse> {
-    const query = this.mapper.map(filter, SearchPaymentTransactionsRequest, SearchPaymentTransactionsQuery);
+  public async search(
+    @Query() filter?: SearchPaymentTransactionsRequest,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<PaymentTransactionsPagedResponse> {
+    const query = filter
+      ? this.mapper.map(filter, SearchPaymentTransactionsRequest, SearchPaymentTransactionsQuery)
+      : new SearchPaymentTransactionsQuery();
+    query.orgId = requireOrganizationId(user);
     const result = await this.mediator.execute<SearchPaymentTransactionsQuery, IPageable<PaymentTransaction>>(query);
     return {
       ...result,
@@ -37,8 +45,14 @@ export class PaymentTransactionsController {
   @ApiOkResponse({ type: [PaymentTransactionResponse] })
   @HttpCode(HttpStatus.OK)
   @Get('list')
-  public async list(@Query() filter?: ListPaymentTransactionsRequest): Promise<PaymentTransactionResponse[]> {
-    const query = this.mapper.map(filter, ListPaymentTransactionsRequest, ListPaymentTransactionsQuery);
+  public async list(
+    @Query() filter?: ListPaymentTransactionsRequest,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<PaymentTransactionResponse[]> {
+    const query = filter
+      ? this.mapper.map(filter, ListPaymentTransactionsRequest, ListPaymentTransactionsQuery)
+      : new ListPaymentTransactionsQuery();
+    query.orgId = requireOrganizationId(user);
     const result = await this.mediator.execute<ListPaymentTransactionsQuery, PaymentTransaction[]>(query);
     return this.mapper.mapArray(result, PaymentTransaction, PaymentTransactionResponse);
   }
@@ -48,10 +62,11 @@ export class PaymentTransactionsController {
   @ApiParam({ name: 'id', description: 'Payment Transaction UUID' })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  public async getById(@Param('id') id: string): Promise<PaymentTransactionResponse> {
+  public async getById(@Param('id') id: string, @CurrentUser() user?: AuthenticatedUser): Promise<PaymentTransactionResponse> {
     const query = new GetPaymentTransactionQuery();
     query.id = id;
     const result = await this.mediator.execute<GetPaymentTransactionQuery, PaymentTransaction>(query);
+    assertOrgOwnership(user, result.orgId, 'payment-transaction');
     return this.mapper.map(result, PaymentTransaction, PaymentTransactionResponse);
   }
 
@@ -59,8 +74,12 @@ export class PaymentTransactionsController {
   @ApiCreatedResponse({ type: PaymentTransactionResponse })
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  public async create(@Body() body: CreatePaymentTransactionRequest): Promise<PaymentTransactionResponse> {
+  public async create(
+    @Body() body: CreatePaymentTransactionRequest,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<PaymentTransactionResponse> {
     const command = this.mapper.map(body, CreatePaymentTransactionRequest, CreatePaymentTransactionCommand);
+    command.orgId = requireOrganizationId(user);
     const result  = await this.mediator.execute<CreatePaymentTransactionCommand, PaymentTransaction>(command);
     return this.mapper.map(result, PaymentTransaction, PaymentTransactionResponse);
   }
@@ -69,8 +88,12 @@ export class PaymentTransactionsController {
   @ApiOkResponse({ type: PaymentTransactionResponse })
   @ApiParam({ name: 'id', description: 'Payment Transaction UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
   @Put(':id')
-  public async update(@Param('id') id: string, @Body() body: UpdatePaymentTransactionRequest): Promise<PaymentTransactionResponse> {
+  public async update(@Param('id') id: string, @Body() body: UpdatePaymentTransactionRequest, @CurrentUser() user?: AuthenticatedUser): Promise<PaymentTransactionResponse> {
+    const existing = await this.mediator.execute<GetPaymentTransactionQuery, PaymentTransaction>(Object.assign(new GetPaymentTransactionQuery(), { id }));
+    assertOrgOwnership(user, existing.orgId, 'payment-transaction');
     const command = this.mapper.map(body, UpdatePaymentTransactionRequest, UpdatePaymentTransactionCommand);
     command.id    = id;
     const result  = await this.mediator.execute<UpdatePaymentTransactionCommand, PaymentTransaction>(command);
@@ -81,6 +104,8 @@ export class PaymentTransactionsController {
   @ApiOkResponse({ type: Boolean })
   @ApiParam({ name: 'id', description: 'Payment Transaction UUID' })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
   @Delete(':id')
   public async delete(@Param('id') id: string): Promise<boolean> {
     const command = new DeletePaymentTransactionCommand();

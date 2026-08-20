@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRoleEntity } from '../../../../infrastructure/persistence/entities/user-role.entity';
 import { UserRole } from '../domain';
 import { CreateUserRoleRequest, UpdateUserRoleRequest, UserRoleResponse } from '../models';
-import { CreateUserRoleCommand } from '../commands';
+import { CreateUserRoleCommand, UpdateUserRoleCommand } from '../commands';
 
 @Injectable()
 export class UserRoleProfile extends AutomapperProfile {
@@ -15,6 +15,7 @@ export class UserRoleProfile extends AutomapperProfile {
       createMap(mapper, UserRoleEntity, UserRole);
       createMap(mapper, UserRole, UserRoleEntity);
       createMap(mapper, CreateUserRoleRequest, CreateUserRoleCommand);
+      createMap(mapper, UpdateUserRoleRequest, UpdateUserRoleCommand);
       createMap(mapper, UserRole, UserRoleResponse);
     };
   }

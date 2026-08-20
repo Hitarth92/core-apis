@@ -6,6 +6,7 @@ export interface CreditApprovalRequestFilter {
   status?: string;
   customerId?: string;
   billId?: string;
+  requestedById?: string;
 }
 
 export const CREDIT_APPROVAL_REQUEST_REPO = 'CREDIT_APPROVAL_REQUEST_REPO';

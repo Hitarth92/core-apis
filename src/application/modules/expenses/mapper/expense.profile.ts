@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { ExpenseEntity } from '../../../../infrastructure/persistence/entities/expense.entity';
 import { Expense } from '../domain';
-import { CreateExpenseRequest, UpdateExpenseRequest, ExpenseResponse } from '../models';
+import { CreateExpenseRequest, ExpenseResponse } from '../models';
 import { CreateExpenseCommand } from '../commands';
 
 @Injectable()

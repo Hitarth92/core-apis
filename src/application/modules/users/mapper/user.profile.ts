@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from '../../../../infrastructure/persistence/entities/user.entity';
 import { User } from '../domain';
-import { AssignUserToOrgRequest, CreateUserRequest, InviteUserRequest, UpdateUserRequest, UpdateUserRolesRequest } from '../models';
+import { AssignUserToOrgRequest, CreateUserRequest, InviteUserRequest, UpdateUserRolesRequest } from '../models';
 import { CreateUserCommand, InviteUserCommand, UpdateUserRolesCommand, AssignUserToOrgCommand } from '../commands';
 import { UserResponse } from '../models';
 

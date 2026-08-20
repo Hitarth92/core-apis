@@ -3,4 +3,4 @@ import { ProductLog, ProductLogFilter } from 'src/application/modules/product-lo
 
 export const PRODUCT_LOG_REPO = 'PRODUCT_LOG_REPO';
 
-export interface IProductLogRepo extends IBaseRepo<ProductLog, string, PageableFilter<ProductLogFilter>, Filter<ProductLogFilter>> {}
+export type IProductLogRepo = IBaseRepo<ProductLog, string, PageableFilter<ProductLogFilter>, Filter<ProductLogFilter>>;

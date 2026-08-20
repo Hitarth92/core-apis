@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { BaseRepo } from '../../../common';
 import { Filter, PageableFilter } from '../../../common';
 import { VehicleExpenseEntity } from '../entities';
-import { VehicleExpense } from '../../../application/modules/vehicle-expenses/domain/vehicle-expense.model';
+import { VehicleExpense } from '../../../application/modules/vehicle-expenses/domain';
 import { IVehicleExpenseRepo } from '../../../application/modules/vehicle-expenses/repositories/i-vehicle-expense.repo';
 
 @Injectable()

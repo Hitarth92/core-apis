@@ -2,7 +2,7 @@ import { AutoMap } from '@automapper/classes';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { EOrder, Filter } from 'src/common';
-import { Trip } from '../../domain/trip.model';
+import { Trip } from '../../domain';
 
 export class ListTripsRequest implements Filter<Trip, string> {
   @ApiPropertyOptional() @IsOptional() @IsString() @AutoMap() public tripNumber?: string;

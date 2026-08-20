@@ -4,8 +4,6 @@ export class Migration1786301965722 implements MigrationInterface {
     name = 'Migration1786301965722'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP CONSTRAINT "FK__purchase_orders__locations"`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP CONSTRAINT "FK__purchase_orders__organizations"`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" DROP CONSTRAINT "FK__activity_logs__locations"`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" DROP CONSTRAINT "FK__user_roles__locations"`);
         await queryRunner.query(`ALTER TABLE "core"."orders" DROP CONSTRAINT "FK__orders__locations"`);
@@ -13,8 +11,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP CONSTRAINT "FK__expenses__locations"`);
         await queryRunner.query(`ALTER TABLE "core"."item_returns" DROP CONSTRAINT "FK__item_returns__locations"`);
         await queryRunner.query(`ALTER TABLE "core"."stock_entries" DROP CONSTRAINT "FK__stock_entries__locations"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP CONSTRAINT "FK__stock_transfers__to_locations"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP CONSTRAINT "FK__stock_transfers__from_locations"`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" RENAME COLUMN "location_id" TO "store_id"`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" RENAME COLUMN "location_id" TO "store_id"`);
         await queryRunner.query(`ALTER TABLE "core"."orders" RENAME COLUMN "location_id" TO "store_id"`);
@@ -26,18 +22,13 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "core"."credit_approval_requests" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "organization_id" uuid NOT NULL, "customer_id" uuid NOT NULL, "bill_id" uuid NOT NULL, "requested_amount" numeric(18,4) NOT NULL, "requested_by_id" uuid NOT NULL, "status" "core"."credit_approval_requests_status_enum" NOT NULL DEFAULT 'pending', "decided_by_id" uuid, "decided_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_credit_approval_requests" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "core"."commission_payables_status_enum" AS ENUM('owed', 'paid')`);
         await queryRunner.query(`CREATE TABLE "core"."commission_payables" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "organization_id" uuid NOT NULL, "bill_id" uuid NOT NULL, "facilitator_user_id" uuid, "facilitator_name" character varying(255), "amount" numeric(18,4) NOT NULL, "status" "core"."commission_payables_status_enum" NOT NULL DEFAULT 'owed', "paid_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_commission_payables" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP COLUMN "location_id"`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP COLUMN "organization_id"`);
         await queryRunner.query(`ALTER TABLE "core"."stores" DROP COLUMN "state"`);
         await queryRunner.query(`ALTER TABLE "core"."stores" DROP COLUMN "image_key"`);
         await queryRunner.query(`ALTER TABLE "core"."locations" DROP COLUMN "state"`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP COLUMN "location_id"`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP COLUMN "status"`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP COLUMN "submitted_by"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP COLUMN "from_location_id"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP COLUMN "to_location_id"`);
         await queryRunner.query(`ALTER TABLE "core"."inventory" ADD "quantity_unpublished" numeric(18,4) NOT NULL DEFAULT '0'`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD "store_id" uuid NOT NULL`);
         await queryRunner.query(`ALTER TABLE "core"."stock_movements" ADD "is_unpublished_entry" boolean NOT NULL DEFAULT false`);
         await queryRunner.query(`ALTER TABLE "core"."customers" ADD "credit_limit" numeric(18,4)`);
         await queryRunner.query(`ALTER TABLE "core"."customers" ADD "credit_balance" numeric(18,4) NOT NULL DEFAULT '0'`);
@@ -55,8 +46,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."bills" ADD "facilitator_name" character varying(255)`);
         await queryRunner.query(`ALTER TABLE "core"."bills" ADD "commission_amount" numeric(18,4) NOT NULL DEFAULT '0'`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD "store_id" uuid`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD "from_store_id" uuid NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD "to_store_id" uuid NOT NULL`);
         await queryRunner.query(`ALTER TYPE "core"."roles_name_enum" RENAME TO "roles_name_enum_old"`);
         await queryRunner.query(`CREATE TYPE "core"."roles_name_enum" AS ENUM('super_admin', 'org_admin', 'org_manager', 'store_manager', 'store_staff')`);
         await queryRunner.query(`ALTER TABLE "core"."roles" ALTER COLUMN "name" TYPE "core"."roles_name_enum" USING "name"::"text"::"core"."roles_name_enum"`);
@@ -70,7 +59,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."bills" DROP COLUMN "walk_in_gstin"`);
         await queryRunner.query(`ALTER TABLE "core"."bills" ADD "walk_in_gstin" character varying(20)`);
         await queryRunner.query(`CREATE INDEX "IX__bills__org_location_status" ON "core"."bills" ("organization_id", "location_id", "status") `);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD CONSTRAINT "FK__purchase_orders__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" ADD CONSTRAINT "FK__activity_logs__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" ADD CONSTRAINT "FK__user_roles__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."orders" ADD CONSTRAINT "FK__orders__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -78,8 +66,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD CONSTRAINT "FK__expenses__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."item_returns" ADD CONSTRAINT "FK__item_returns__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."stock_entries" ADD CONSTRAINT "FK__stock_entries__stores" FOREIGN KEY ("store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD CONSTRAINT "FK__stock_transfers__from_stores" FOREIGN KEY ("from_store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD CONSTRAINT "FK__stock_transfers__to_stores" FOREIGN KEY ("to_store_id") REFERENCES "core"."stores"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" ADD CONSTRAINT "FK__customer_credit_transactions__customers" FOREIGN KEY ("customer_id") REFERENCES "core"."customers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" ADD CONSTRAINT "FK__customer_credit_transactions__bills" FOREIGN KEY ("bill_id") REFERENCES "core"."bills"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" ADD CONSTRAINT "FK__customer_credit_transactions__users" FOREIGN KEY ("performed_by_id") REFERENCES "core"."users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -105,8 +91,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" DROP CONSTRAINT "FK__customer_credit_transactions__users"`);
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" DROP CONSTRAINT "FK__customer_credit_transactions__bills"`);
         await queryRunner.query(`ALTER TABLE "core"."customer_credit_transactions" DROP CONSTRAINT "FK__customer_credit_transactions__customers"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP CONSTRAINT "FK__stock_transfers__to_stores"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP CONSTRAINT "FK__stock_transfers__from_stores"`);
         await queryRunner.query(`ALTER TABLE "core"."stock_entries" DROP CONSTRAINT "FK__stock_entries__stores"`);
         await queryRunner.query(`ALTER TABLE "core"."item_returns" DROP CONSTRAINT "FK__item_returns__stores"`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP CONSTRAINT "FK__expenses__stores"`);
@@ -114,7 +98,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."orders" DROP CONSTRAINT "FK__orders__stores"`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" DROP CONSTRAINT "FK__user_roles__stores"`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" DROP CONSTRAINT "FK__activity_logs__stores"`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP CONSTRAINT "FK__purchase_orders__stores"`);
         await queryRunner.query(`DROP INDEX "core"."IX__bills__org_location_status"`);
         await queryRunner.query(`ALTER TABLE "core"."bills" DROP COLUMN "walk_in_gstin"`);
         await queryRunner.query(`ALTER TABLE "core"."bills" ADD "walk_in_gstin" character varying(50)`);
@@ -128,8 +111,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."roles" ALTER COLUMN "name" TYPE "core"."roles_name_enum_old" USING "name"::"text"::"core"."roles_name_enum_old"`);
         await queryRunner.query(`DROP TYPE "core"."roles_name_enum"`);
         await queryRunner.query(`ALTER TYPE "core"."roles_name_enum_old" RENAME TO "roles_name_enum"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP COLUMN "to_store_id"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" DROP COLUMN "from_store_id"`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" DROP COLUMN "store_id"`);
         await queryRunner.query(`ALTER TABLE "core"."bills" DROP COLUMN "commission_amount"`);
         await queryRunner.query(`ALTER TABLE "core"."bills" DROP COLUMN "facilitator_name"`);
@@ -147,18 +128,13 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."customers" DROP COLUMN "credit_balance"`);
         await queryRunner.query(`ALTER TABLE "core"."customers" DROP COLUMN "credit_limit"`);
         await queryRunner.query(`ALTER TABLE "core"."stock_movements" DROP COLUMN "is_unpublished_entry"`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" DROP COLUMN "store_id"`);
         await queryRunner.query(`ALTER TABLE "core"."inventory" DROP COLUMN "quantity_unpublished"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD "to_location_id" uuid NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD "from_location_id" uuid NOT NULL`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD "submitted_by" character varying(255)`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD "status" character varying(20) NOT NULL DEFAULT 'pending'`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD "location_id" uuid`);
         await queryRunner.query(`ALTER TABLE "core"."locations" ADD "state" character varying(100)`);
         await queryRunner.query(`ALTER TABLE "core"."stores" ADD "image_key" character varying(500)`);
         await queryRunner.query(`ALTER TABLE "core"."stores" ADD "state" character varying(100)`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD "organization_id" uuid NOT NULL`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD "location_id" uuid NOT NULL`);
         await queryRunner.query(`DROP TABLE "core"."commission_payables"`);
         await queryRunner.query(`DROP TYPE "core"."commission_payables_status_enum"`);
         await queryRunner.query(`DROP TABLE "core"."credit_approval_requests"`);
@@ -170,8 +146,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."orders" RENAME COLUMN "store_id" TO "location_id"`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" RENAME COLUMN "store_id" TO "location_id"`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" RENAME COLUMN "store_id" TO "location_id"`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD CONSTRAINT "FK__stock_transfers__from_locations" FOREIGN KEY ("from_location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "core"."stock_transfers" ADD CONSTRAINT "FK__stock_transfers__to_locations" FOREIGN KEY ("to_location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."stock_entries" ADD CONSTRAINT "FK__stock_entries__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."item_returns" ADD CONSTRAINT "FK__item_returns__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."expenses" ADD CONSTRAINT "FK__expenses__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -179,8 +153,6 @@ export class Migration1786301965722 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "core"."orders" ADD CONSTRAINT "FK__orders__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."user_roles" ADD CONSTRAINT "FK__user_roles__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "core"."activity_logs" ADD CONSTRAINT "FK__activity_logs__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD CONSTRAINT "FK__purchase_orders__organizations" FOREIGN KEY ("organization_id") REFERENCES "core"."organizations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "core"."purchase_orders" ADD CONSTRAINT "FK__purchase_orders__locations" FOREIGN KEY ("location_id") REFERENCES "core"."locations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
 
 }

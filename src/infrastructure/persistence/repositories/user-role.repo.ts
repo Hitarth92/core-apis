@@ -22,4 +22,13 @@ export class UserRoleRepo extends BaseRepo<UserRoleEntity, UserRole, string, Pag
   public override get idColumnName(): keyof UserRoleEntity {
     return 'id';
   }
+
+  public async allByOrganizationAsync(organizationId: string): Promise<UserRole[]> {
+    const entities = await this.internalRepo
+      .createQueryBuilder('ur')
+      .innerJoin('ur.user', 'u')
+      .where('u.organizationId = :organizationId', { organizationId })
+      .getMany();
+    return this.mapper.mapArray(entities, UserRoleEntity, UserRole);
+  }
 }

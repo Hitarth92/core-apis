@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, CurrentUser, AuthenticatedUser, Roles, RolesGuard, InventoryNotOwnedByOrgException } from 'src/common';
+import { ClerkAuthGuard, CqrsMediator, CurrentUser, AuthenticatedUser, Roles, RolesGuard, InventoryNotOwnedByOrgException, assertLocationAccess } from 'src/common';
 import { ERole } from 'src/infrastructure/persistence/entities/role.entity';
 import { Inventory } from 'src/application/modules/inventory/domain';
 import { GetInventoryQuery } from 'src/application/modules/inventory/queries/get-inventory';
@@ -37,6 +37,7 @@ export class StockMovementsController {
     invQuery.id        = result.inventoryId;
     const inventory    = await this.mediator.execute<GetInventoryQuery, Inventory>(invQuery);
     if (inventory.organizationId !== user.organizationId) throw new InventoryNotOwnedByOrgException();
+    assertLocationAccess(user, inventory.locationId);
     return this.mapper.map(result, StockMovement, StockMovementResponse);
   }
 
@@ -50,6 +51,7 @@ export class StockMovementsController {
     invQuery.id        = inventoryId;
     const inventory    = await this.mediator.execute<GetInventoryQuery, Inventory>(invQuery);
     if (inventory.organizationId !== user.organizationId) throw new InventoryNotOwnedByOrgException();
+    assertLocationAccess(user, inventory.locationId);
     const query        = new ListMovementsByInventoryQuery();
     query.inventoryId  = inventoryId;
     const result       = await this.mediator.execute<ListMovementsByInventoryQuery, StockMovement[]>(query);
@@ -62,6 +64,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('add')
   public async addStock(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, AddStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -74,6 +77,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('remove')
   public async removeStock(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, RemoveStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -86,6 +90,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('adjust')
   public async adjustStock(@CurrentUser() user: AuthenticatedUser, @Body() body: AdjustStockRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, AdjustStockRequest, AdjustStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -98,6 +103,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('reserve')
   public async reserveStock(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, ReserveStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -110,6 +116,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('release-reservation')
   public async releaseReservation(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, ReleaseReservationCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -122,6 +129,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('damage')
   public async damageStock(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, DamageStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;
@@ -134,6 +142,7 @@ export class StockMovementsController {
   @Roles(ERole.OrgAdmin, ERole.SuperAdmin, ERole.StoreManager)
   @Post('write-off')
   public async writeOffStock(@CurrentUser() user: AuthenticatedUser, @Body() body: StockOperationRequest): Promise<void> {
+    assertLocationAccess(user, body.locationId);
     const command          = this.mapper.map(body, StockOperationRequest, WriteOffStockCommand);
     command.organizationId = user.organizationId;
     command.performedById  = user.dbUserId;

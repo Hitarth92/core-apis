@@ -7,7 +7,7 @@ import { Order } from '../../domain';
 import { IOrderRepo } from '../..';
 import { CreateOrderCommand } from './create-order.command';
 import { OrdersMailService } from '../../mail';
-import { IPushNotificationService, PUSH_NOTIFICATION_SERVICE } from '../../../../../common/push-notification';
+import { IPushNotificationService, PUSH_NOTIFICATION_SERVICE } from '../../../../../common';
 
 @CommandHandlerStrict(CreateOrderCommand)
 export class CreateOrderCommandHandler implements ICommandHandler<CreateOrderCommand, Order> {

@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateDriverRequest, UpdateDriverRequest, SearchDriversRequest, ListDriversRequest, DriverResponse } from '../models';
 import { Driver } from '../domain';
 import { CreateDriverCommand, UpdateDriverCommand } from '../commands';
-import { SearchDriversQuery } from '../queries/search-drivers/search-drivers.query';
-import { ListDriversQuery } from '../queries/list-drivers/list-drivers.query';
+import { SearchDriversQuery } from '../queries/search-drivers';
+import { ListDriversQuery } from '../queries/list-drivers';
 import { DriverEntity } from '../../../../infrastructure/persistence/entities';
 
 @Injectable()

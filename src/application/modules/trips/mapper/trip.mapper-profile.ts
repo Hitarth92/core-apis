@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateTripRequest, UpdateTripRequest, SearchTripsRequest, ListTripsRequest, CreateTripResponse } from '../models';
 import { Trip } from '../domain';
 import { CreateTripCommand, UpdateTripCommand } from '../commands';
-import { SearchTripsQuery } from '../queries/search-trips/search-trips.query';
-import { ListTripsQuery } from '../queries/list-trips/list-trips.query';
+import { SearchTripsQuery } from '../queries/search-trips';
+import { ListTripsQuery } from '../queries/list-trips';
 import { TripEntity } from '../../../../infrastructure/persistence/entities';
 
 @Injectable()

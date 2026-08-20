@@ -3,7 +3,7 @@ import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { InvoiceEntity } from '../../../../infrastructure/persistence/entities/invoice.entity';
 import { Invoice } from '../domain';
-import { CreateInvoiceRequest, UpdateInvoiceRequest, InvoiceResponse } from '../models';
+import { CreateInvoiceRequest, InvoiceResponse } from '../models';
 import { CreateInvoiceCommand } from '../commands';
 
 @Injectable()

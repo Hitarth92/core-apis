@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { BaseRepo } from '../../../common';
 import { Filter, PageableFilter } from '../../../common';
 import { MaintenanceEntity } from '../entities';
-import { Maintenance } from '../../../application/modules/maintenance/domain/maintenance';
+import { Maintenance } from '../../../application/modules/maintenance/domain';
 import { IMaintenanceRepo } from '../../../application/modules/maintenance/repositories/i-maintenance.repo';
 
 @Injectable()

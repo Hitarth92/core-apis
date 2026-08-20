@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailTemplateProfile } from './mapper/email-template.profile';
 import { MailController } from './mail.controller';
-import { MailOptions } from '../../../common/mail';
-import { AppMailService } from '../../../common/mail';
+import { MailOptions } from '../../../common';
+import { AppMailService } from '../../../common';
 import { ICoreApiConfig } from '../../../configuration';
 
 @Module({

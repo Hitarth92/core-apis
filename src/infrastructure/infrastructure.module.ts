@@ -30,6 +30,7 @@ import {
   RoleRepo,
   StockMovementRepo,
   StockTransferRepo,
+  StockTransferRequestRepo,
   UserRoleRepo,
   UserRepo,
   OrgMemberRepo,
@@ -59,6 +60,8 @@ import {
   VehicleExpenseRepo,
   PageAccessRepo,
   EmailTemplateRepo,
+  QuickChargeRepo,
+  CustomerTypeRuleRepo,
 } from './persistence';
 
 import {
@@ -83,6 +86,7 @@ import {
   ROLE_REPO,
   STOCK_MOVEMENT_REPO,
   STOCK_TRANSFER_REPO,
+  STOCK_TRANSFER_REQUEST_REPO,
   SUPPLIER_REPO,
   USER_REPO,
   USER_ROLE_REPO,
@@ -113,6 +117,8 @@ import {
   VEHICLE_EXPENSE_REPO,
   PAGE_ACCESS_REPO,
   EMAIL_TEMPLATE_REPO,
+  QUICK_CHARGE_REPO,
+  CUSTOMER_TYPE_RULE_REPO,
 } from '../application/constants';
 
 @Module({})
@@ -162,6 +168,7 @@ export class InfrastructureModule {
         { provide: ROLE_REPO, useClass: RoleRepo },
         { provide: STOCK_MOVEMENT_REPO, useClass: StockMovementRepo },
         { provide: STOCK_TRANSFER_REPO, useClass: StockTransferRepo },
+        { provide: STOCK_TRANSFER_REQUEST_REPO, useClass: StockTransferRequestRepo },
         { provide: USER_REPO, useClass: UserRepo },
         { provide: USER_ROLE_REPO, useClass: UserRoleRepo },
         { provide: ORG_MEMBER_REPO, useClass: OrgMemberRepo },
@@ -191,6 +198,8 @@ export class InfrastructureModule {
         { provide: VEHICLE_EXPENSE_REPO, useClass: VehicleExpenseRepo },
         { provide: PAGE_ACCESS_REPO, useClass: PageAccessRepo },
         { provide: EMAIL_TEMPLATE_REPO, useClass: EmailTemplateRepo },
+        { provide: QUICK_CHARGE_REPO, useClass: QuickChargeRepo },
+        { provide: CUSTOMER_TYPE_RULE_REPO, useClass: CustomerTypeRuleRepo },
       ],
       exports: [
         EntityMapperProfile,
@@ -216,6 +225,7 @@ export class InfrastructureModule {
         ROLE_REPO,
         STOCK_MOVEMENT_REPO,
         STOCK_TRANSFER_REPO,
+        STOCK_TRANSFER_REQUEST_REPO,
         USER_REPO,
         USER_ROLE_REPO,
         ORG_MEMBER_REPO,
@@ -245,6 +255,8 @@ export class InfrastructureModule {
         VEHICLE_EXPENSE_REPO,
         PAGE_ACCESS_REPO,
         EMAIL_TEMPLATE_REPO,
+        QUICK_CHARGE_REPO,
+        CUSTOMER_TYPE_RULE_REPO,
       ],
     };
   }

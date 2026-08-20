@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IFilterNormalizer, Filter, PageableFilter } from '../../../../common';
 import { PaymentTransactionFilter } from '../domain';
-import { PaymentTransactionFeatureOptions } from '../options/payment-transaction-feature.options';
+import { PaymentTransactionFeatureOptions } from '../options';
 
 @Injectable()
 export class PaymentTransactionFilterNormalizer implements IFilterNormalizer<PaymentTransactionFilter> {
