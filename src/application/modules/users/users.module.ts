@@ -5,6 +5,7 @@ import { UsersController } from './users.controller';
 import { UserCommandHandlers } from './commands';
 import { UserQueryHandlers } from './queries';
 import { UserProfile } from './mapper';
+import { ErpRoleLookupService } from './services';
 
 @Module({
   imports:     [CqrsModule],
@@ -14,6 +15,7 @@ import { UserProfile } from './mapper';
     ...UserCommandHandlers,
     ...UserQueryHandlers,
     UserProfile,
+    ErpRoleLookupService,
   ],
 })
 export class UsersModule {}

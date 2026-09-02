@@ -26,6 +26,23 @@ export class UserRepo
     return 'id';
   }
 
+  public async findByClerkIdsAsync(clerkUserIds: string[]): Promise<User[]> {
+    if (!clerkUserIds.length) return [];
+    const entities = await this.internalRepo
+      .createQueryBuilder('u')
+      .where('u.clerkUserId IN (:...clerkUserIds)', { clerkUserIds })
+      .getMany();
+    return this.mapper.mapArray(entities, UserEntity, User);
+  }
+
+  public async allByOrganizationAsync(organizationId: string): Promise<User[]> {
+    const entities = await this.internalRepo.find({
+      where: { organizationId },
+      order: { firstName: 'ASC', lastName: 'ASC' },
+    });
+    return this.mapper.mapArray(entities, UserEntity, User);
+  }
+
   public async findByClerkIdAsync(clerkUserId: string): Promise<User | null> {
     const entity = await this.internalRepo.findOne({ where: { clerkUserId } });
     if (!entity) return null;

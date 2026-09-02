@@ -10,4 +10,5 @@ export class UserResponse {
   @ApiProperty() @AutoMap() public organizationId: string;
   @ApiPropertyOptional() @AutoMap() public locationId?: string;
   @ApiProperty() @AutoMap() public isActive: boolean;
+  @ApiPropertyOptional({ type: [String] }) public roleNames?: string[];
 }

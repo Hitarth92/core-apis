@@ -31,4 +31,15 @@ export class UserRoleRepo extends BaseRepo<UserRoleEntity, UserRole, string, Pag
       .getMany();
     return this.mapper.mapArray(entities, UserRoleEntity, UserRole);
   }
+
+  public async roleNamesByUserIdsAsync(userIds: string[]): Promise<Array<{ userId: string; roleName: string }>> {
+    if (!userIds.length) return [];
+    return this.internalRepo
+      .createQueryBuilder('ur')
+      .innerJoin('ur.role', 'role')
+      .select('ur.userId', 'userId')
+      .addSelect('role.name', 'roleName')
+      .where('ur.userId IN (:...userIds)', { userIds })
+      .getRawMany<{ userId: string; roleName: string }>();
+  }
 }

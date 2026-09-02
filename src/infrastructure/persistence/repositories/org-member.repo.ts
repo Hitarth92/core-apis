@@ -37,4 +37,15 @@ export class OrgMemberRepo
     const entities = await this.internalRepo.find({ where: { userId } });
     return this.mapToModelArray(entities);
   }
+
+  public async roleNamesByUserIdsAsync(userIds: string[]): Promise<Array<{ userId: string; roleName: string }>> {
+    if (!userIds.length) return [];
+    return this.internalRepo
+      .createQueryBuilder('om')
+      .innerJoin('om.role', 'role')
+      .select('om.userId', 'userId')
+      .addSelect('role.name', 'roleName')
+      .where('om.userId IN (:...userIds)', { userIds })
+      .getRawMany<{ userId: string; roleName: string }>();
+  }
 }

@@ -3,7 +3,7 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards, ParseEnumPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ClerkAuthGuard, CqrsMediator, Roles, RolesGuard, AuthenticatedUser, CurrentUser, assertOrgOwnership } from '../../../common';
+import { ClerkAuthGuard, CqrsMediator, Roles, RolesGuard, AuthenticatedUser, CurrentUser, assertOrgOwnership, requireOrganizationId } from '../../../common';
 import { resolveInviteOrganizationId } from './commands/invite-user';
 import { ERole } from '../../../infrastructure';
 import {
@@ -38,6 +38,7 @@ import {
   GetUserRolesQuery,
   ListInvitationsQuery,
   ListOrganizationsQuery,
+  ListUserDirectoryQuery,
   ListUsersQuery,
   SearchUsersQuery,
 } from './queries';
@@ -96,6 +97,18 @@ export class UsersController {
     query.limit    = params.limit;
     query.offset   = params.offset;
     return this.mediator.execute<SearchUsersQuery, ClerkUserListResponse>(query);
+  }
+
+  @ApiOperation({ summary: 'List org users from local DB (for assignment pickers)' })
+  @ApiOkResponse({ type: [UserResponse] })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(ERole.OrgAdmin, ERole.SuperAdmin)
+  @Get('directory')
+  public async directory(@CurrentUser() user: AuthenticatedUser): Promise<UserResponse[]> {
+    const query = new ListUserDirectoryQuery();
+    query.organizationId = requireOrganizationId(user);
+    return this.mediator.execute<ListUserDirectoryQuery, UserResponse[]>(query);
   }
 
   @ApiOperation({ summary: 'Get user by local DB ID' })
